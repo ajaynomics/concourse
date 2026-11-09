@@ -40,7 +40,7 @@
 /.github
 /.gitea
 
-# Client development and private worktree state are not server runtime inputs.
+# Client development and local worktree state are not server runtime inputs.
 /pi/
 /adapters/
 /packaging/

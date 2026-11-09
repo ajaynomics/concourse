@@ -11,7 +11,7 @@ class TrustedProxiesTest < ActiveSupport::TestCase
   end
 
   test "a Worker on Cloudflare reports its own address, not the one it wrote" do
-    assert_equal "162.158.187.109", remote_ip("203.0.113.9, 162.158.187.109")
+    assert_equal "162.158.0.1", remote_ip("203.0.113.9, 162.158.0.1")
   end
 
   test "Rails' defaults are the only trusted proxies" do

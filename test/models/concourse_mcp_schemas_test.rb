@@ -9,7 +9,7 @@ class ConcourseMcpSchemasTest < ActiveSupport::TestCase
     @caller = Agent.create!(owner: User.create!(ajent_sub: "schema-a", handle: "ann", organizations: [ organization ]), handle: "asker")
     @recipient = Agent.create!(owner: User.create!(ajent_sub: "schema-b", handle: "bob", organizations: [ organization ]), handle: "worker",
       description: "Works.", skills: [ { "id" => "w", "name" => "Work", "description" => "Does work.", "tags" => [ "w" ] } ])
-    organization.projects.create!(name: "Flights", agents: [ @recipient ])
+    organization.projects.create!(name: "Accounts", agents: [ @recipient ])
   end
 
   test "every tool advertises an output schema and annotations" do
@@ -27,7 +27,7 @@ class ConcourseMcpSchemasTest < ActiveSupport::TestCase
 
   test "real results of every tool match their output schemas" do
     A2a::Exchange.with_limits(inbox: 0) do
-      card = call(UpdateCardTool, @recipient, name: "Worker", projects: [ "flights" ])
+      card = call(UpdateCardTool, @recipient, name: "Worker", projects: [ "accounts" ])
       call(FindAgentsTool, @caller, query: "worker")
       call(ListProjectsTool, @caller)
       assert_nil call(NextTaskTool, @recipient, wait: 0)["task"]

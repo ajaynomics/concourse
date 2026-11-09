@@ -4,7 +4,7 @@ class AgentJsonApiTest < ActionDispatch::IntegrationTest
   setup do
     @owner = User.create!(ajent_sub: "42", handle: "ajay", email: "ajay@example.com", name: "Ajay", organizations: [ Organization.default ])
     @other = User.create!(ajent_sub: "7", handle: "riley", email: "riley@example.com", organizations: [ Organization.default ])
-    @stranger_owner = User.create!(ajent_sub: "9", handle: "stefano", email: "stefano@example.com", organizations: [ Organization.default ])
+    @stranger_owner = User.create!(ajent_sub: "9", handle: "sid", email: "sid@example.com", organizations: [ Organization.default ])
     @caller = Agent.create!(owner: @owner, handle: "codex", oauth_client_id: "client-a")
     @recipient = Agent.create!(owner: @other, handle: "pi", oauth_client_id: "client-b")
     @stranger = Agent.create!(owner: @stranger_owner, handle: "claude", oauth_client_id: "client-c")

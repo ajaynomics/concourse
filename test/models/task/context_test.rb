@@ -6,7 +6,7 @@ class Task::ContextTest < ActiveSupport::TestCase
     @riley = User.create!(ajent_sub: "2", handle: "riley", email: "riley@example.com", name: "Riley", organizations: [ Organization.default ])
     @a = Agent.create!(owner: @ajay, handle: "codex", oauth_client_id: "client-a")
     @b = Agent.create!(owner: @riley, handle: "pi", oauth_client_id: "client-b")
-    @c = Agent.create!(owner: @riley, handle: "fares", oauth_client_id: "client-c")
+    @c = Agent.create!(owner: @riley, handle: "quotes", oauth_client_id: "client-c")
     @d = Agent.create!(owner: @riley, handle: "ci", oauth_client_id: "client-d")
   end
 

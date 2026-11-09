@@ -4,22 +4,22 @@ class OwnerPagesTest < ActionDispatch::IntegrationTest
   setup do
     @ajay = User.create!(ajent_sub: "42", handle: "ajay", email: "ajay@example.com", name: "Ajay", organizations: [ Organization.default ])
     @riley = User.create!(ajent_sub: "7", handle: "riley", email: "riley@example.com", name: "Riley", organizations: [ Organization.default ])
-    @steve = User.create!(ajent_sub: "9", handle: "steve", email: "steve@example.com", name: "Steve", organizations: [ Organization.default ])
+    @stan = User.create!(ajent_sub: "9", handle: "stan", email: "stan@example.com", name: "Stan", organizations: [ Organization.default ])
     @codex = Agent.create!(owner: @ajay, handle: "codex", oauth_client_id: "client-a")
     @pi = Agent.create!(owner: @riley, handle: "pi", oauth_client_id: "client-b")
-    @hermes = Agent.create!(owner: @steve, handle: "hermes", oauth_client_id: "client-c")
+    @hermes = Agent.create!(owner: @stan, handle: "hermes", oauth_client_id: "client-c")
   end
 
   test "a task page shows the thread" do
     task = Task.open!(recipient: @pi, caller: @codex)
-    Message.record!(task: task, role: "ROLE_USER", sender: @codex, parts: [ { "text" => "Can you review flights?" } ])
+    Message.record!(task: task, role: "ROLE_USER", sender: @codex, parts: [ { "text" => "Can you review accounts?" } ])
     task.transition_to!("TASK_STATE_INPUT_REQUIRED", by: @pi)
 
     sign_in_via_ajent(subject: "42", email: "ajay@example.com", name: "Ajay")
     get my_task_path(Organization.default, task)
 
     assert_response :success
-    assert_select "ol.thread li", text: /Can you review flights\?/
+    assert_select "ol.thread li", text: /Can you review accounts\?/
     assert_select ".state[data-state=TASK_STATE_INPUT_REQUIRED]"
   end
 
@@ -49,11 +49,11 @@ class OwnerPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "tasks list by thread: one task is a row, several fold under the first" do
-    ask = Task.open!(recipient: @pi, caller: @codex, context_id: "flights")
-    Message.record!(task: ask, role: "ROLE_USER", sender: @codex, parts: [ { "text" => "Rebook the Denver flight" } ])
-    answer = Task.open!(recipient: @codex, caller: @pi, context_id: "flights")
-    handoff = Task.open!(recipient: @hermes, caller: @pi, context_id: "flights")
-    unseen = Task.open!(recipient: @hermes, caller: @hermes, context_id: "flights")
+    ask = Task.open!(recipient: @pi, caller: @codex, context_id: "accounts")
+    Message.record!(task: ask, role: "ROLE_USER", sender: @codex, parts: [ { "text" => "Reship the Denver order" } ])
+    answer = Task.open!(recipient: @codex, caller: @pi, context_id: "accounts")
+    handoff = Task.open!(recipient: @hermes, caller: @pi, context_id: "accounts")
+    unseen = Task.open!(recipient: @hermes, caller: @hermes, context_id: "accounts")
     alone = Task.open!(recipient: @pi, caller: @codex, context_id: "alone")
 
     sign_in_via_ajent(subject: "42", email: "ajay@example.com", name: "Ajay")
@@ -61,7 +61,7 @@ class OwnerPagesTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "#tasks_board details[open]", count: 1 do
-      assert_select "summary", text: /Rebook the Denver flight.*2 tasks/m
+      assert_select "summary", text: /Reship the Denver order.*2 tasks/m
       assert_select ".thread-tree a[href='#{my_task_path(Organization.default, ask)}']"
       assert_select ".thread-tree a[href='#{my_task_path(Organization.default, answer)}']"
     end
@@ -88,9 +88,9 @@ class OwnerPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "a task page shows its thread with the task marked" do
-    ask = Task.open!(recipient: @pi, caller: @codex, context_id: "flights")
-    handoff = Task.open!(recipient: @hermes, caller: @pi, context_id: "flights")
-    answer = Task.open!(recipient: @codex, caller: @pi, context_id: "flights")
+    ask = Task.open!(recipient: @pi, caller: @codex, context_id: "accounts")
+    handoff = Task.open!(recipient: @hermes, caller: @pi, context_id: "accounts")
+    answer = Task.open!(recipient: @codex, caller: @pi, context_id: "accounts")
 
     sign_in_via_ajent(subject: "42", email: "ajay@example.com", name: "Ajay")
     get my_task_path(Organization.default, answer)
@@ -105,8 +105,8 @@ class OwnerPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "every view-transition name on a threaded page is unique, or the browser skips the transition" do
-    ask = Task.open!(recipient: @pi, caller: @codex, context_id: "flights")
-    answer = Task.open!(recipient: @codex, caller: @pi, context_id: "flights")
+    ask = Task.open!(recipient: @pi, caller: @codex, context_id: "accounts")
+    answer = Task.open!(recipient: @codex, caller: @pi, context_id: "accounts")
     sign_in_via_ajent(subject: "42", email: "ajay@example.com", name: "Ajay")
 
     [ my_tasks_path(Organization.default), my_task_path(Organization.default, ask), my_task_path(Organization.default, answer) ].each do |path|

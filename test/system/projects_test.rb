@@ -14,22 +14,22 @@ class ProjectsTest < ApplicationSystemTestCase
 
     click_on "Add a project"
     click_on "New project"
-    fill_in "Name", with: "Flights"
-    fill_in "Description", with: "Search and booking."
+    fill_in "Name", with: "Accounts"
+    fill_in "Description", with: "Search and checkout."
     click_on "Save"
-    assert_text "No agents in Flights yet."
+    assert_text "No agents in Accounts yet."
 
     visit edit_agent_path(Organization.default, "ajay", "codex")
-    check "Flights"
+    check "Accounts"
     click_on "Save"
     assert_text "Card saved."
 
     visit agents_path(Organization.default)
     within "nav[aria-label='Projects']" do
-      click_on "Flights"
+      click_on "Accounts"
     end
-    assert_text "One agent works on Flights."
-    assert_text "Search and booking."
+    assert_text "One agent works on Accounts."
+    assert_text "Search and checkout."
     assert_selector "a.row .handle", text: "ajay/codex"
     assert_no_selector "a.row .handle", text: "riley/pi"
   end

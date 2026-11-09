@@ -17,40 +17,40 @@ class AgentSearchTest < ActiveSupport::TestCase
   test "a skill tag outranks a mention in the description" do
     tagged = Agent.create!(
       owner: @ajay, handle: "tagged", oauth_client_id: "c1",
-      skills: [ { "id" => "s", "name" => "S", "description" => "d", "tags" => [ "flights" ] } ]
+      skills: [ { "id" => "s", "name" => "S", "description" => "d", "tags" => [ "accounts" ] } ]
     )
-    mentioned = Agent.create!(owner: @riley, handle: "mentioned", oauth_client_id: "c2", description: "Knows flights in passing")
-    Agent.create!(owner: @riley, handle: "other", oauth_client_id: "c3", description: "Hotels")
+    mentioned = Agent.create!(owner: @riley, handle: "mentioned", oauth_client_id: "c2", description: "Knows accounts in passing")
+    Agent.create!(owner: @riley, handle: "other", oauth_client_id: "c3", description: "Invoices")
 
-    assert_equal [ tagged, mentioned ], directory.search("Flights")
+    assert_equal [ tagged, mentioned ], directory.search("Accounts")
   end
 
   test "a project's name finds its agents" do
-    project = Organization.default.projects.create!(name: "Auto trips")
+    project = Organization.default.projects.create!(name: "Billing runs")
     member = Agent.create!(owner: @ajay, handle: "planner", oauth_client_id: "c1", projects: [ project ])
     Agent.create!(owner: @riley, handle: "other", oauth_client_id: "c2")
 
-    assert_equal [ member ], directory.search("auto-trips")
+    assert_equal [ member ], directory.search("billing-runs")
   end
 
   test "in_project narrows the directory to a project's agents" do
-    flights = Organization.default.projects.create!(name: "Flights")
-    hotels = Organization.default.projects.create!(name: "Hotels")
-    member = Agent.create!(owner: @ajay, handle: "a", oauth_client_id: "c1", projects: [ flights, hotels ])
-    Agent.create!(owner: @riley, handle: "b", oauth_client_id: "c2", projects: [ hotels ])
+    accounts = Organization.default.projects.create!(name: "Accounts")
+    invoices = Organization.default.projects.create!(name: "Invoices")
+    member = Agent.create!(owner: @ajay, handle: "a", oauth_client_id: "c1", projects: [ accounts, invoices ])
+    Agent.create!(owner: @riley, handle: "b", oauth_client_id: "c2", projects: [ invoices ])
 
-    assert_equal [ member ], directory.in_project(flights).search(nil)
-    assert_equal [ "flights", "hotels" ], directory.in_project(flights).first.directory_entry["projects"]
+    assert_equal [ member ], directory.in_project(accounts).search(nil)
+    assert_equal [ "accounts", "invoices" ], directory.in_project(accounts).first.directory_entry["projects"]
   end
 
   test "the directory is one organization's" do
     elsewhere = Organization.create!(name: "Elsewhere")
     stranger = User.create!(ajent_sub: "3", handle: "sam", organizations: [ elsewhere ])
-    Agent.create!(owner: stranger, handle: "flights", oauth_client_id: "c1")
-    Agent.create!(owner: @ajay, handle: "flights", oauth_client_id: "c2")
+    Agent.create!(owner: stranger, handle: "accounts", oauth_client_id: "c1")
+    Agent.create!(owner: @ajay, handle: "accounts", oauth_client_id: "c2")
 
-    assert_equal [ "ajay/flights" ], directory.search("flights").map(&:qualified_handle)
-    assert_equal [ "sam/flights" ], elsewhere.agents.listed.search("flights").map(&:qualified_handle)
+    assert_equal [ "ajay/accounts" ], directory.search("accounts").map(&:qualified_handle)
+    assert_equal [ "sam/accounts" ], elsewhere.agents.listed.search("accounts").map(&:qualified_handle)
   end
 
   test "the limit stays between one and the maximum" do

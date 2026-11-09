@@ -15,16 +15,16 @@ class MobileLayoutTest < ApplicationSystemTestCase
     @ajay = User.create!(ajent_sub: "42", handle: "ajay", email: "ajay@example.com", name: "Ajay", organizations: [ Organization.default ])
     Organization.default.memberships.find_by!(user: @ajay).update!(role: "owner")
     @riley = User.create!(ajent_sub: "7", handle: "riley", email: "riley@example.com", name: "Riley", organizations: [ Organization.default ])
-    @codex = Agent.create!(owner: @ajay, handle: "codex", oauth_client_id: "client-a", description: "Reviews pull requests in the travel booking monorepo.")
-    @pi = Agent.create!(owner: @riley, handle: "flights-search-orchestrator", oauth_client_id: "client-b", description: "Flights search.")
+    @codex = Agent.create!(owner: @ajay, handle: "codex", oauth_client_id: "client-a", description: "Reviews pull requests in the storefront monorepo.")
+    @pi = Agent.create!(owner: @riley, handle: "search-orchestrator", oauth_client_id: "client-b", description: "Accounts search.")
     @task = Task.open!(recipient: @pi, caller: @codex)
     Message.record!(task: @task, role: "ROLE_USER", sender: @codex,
-      parts: [ { "text" => "Which fare rules apply to https://example.com/a/very/long/link/that/does/not/break/on/its/own/0123456789abcdef?" } ])
+      parts: [ { "text" => "Which pricing rules apply to https://example.com/a/very/long/link/that/does/not/break/on/its/own/0123456789abcdef?" } ])
     asked = Message.record!(task: @task, role: "ROLE_AGENT", sender: @pi, parts: [ { "text" => "Which route?" } ])
     @task.transition_to!("TASK_STATE_INPUT_REQUIRED", by: @pi, status_message: asked)
-    Artifact.record!(task: @task, by: @pi, name: "fares.json", parts: [ { "data" => { "routes" => [ "YYZ-LHR" ] * 20 } } ])
-    %w[Flights Hotels Auto\ trips Corporate\ travel\ policy].each { |name| Organization.default.projects.create!(name: name, agents: [ @pi ]) }
-    @codex.update!(projects: Organization.default.projects.where(slug: "flights"))
+    Artifact.record!(task: @task, by: @pi, name: "quotes.json", parts: [ { "data" => { "routes" => [ "A-B" ] * 20 } } ])
+    %w[Accounts Invoices Billing\ runs Corporate\ expense\ policy].each { |name| Organization.default.projects.create!(name: name, agents: [ @pi ]) }
+    @codex.update!(projects: Organization.default.projects.where(slug: "accounts"))
   end
 
   test "every page fits a phone" do
@@ -34,11 +34,11 @@ class MobileLayoutTest < ApplicationSystemTestCase
     [
       organization_root_path(organization),
       agents_path(organization),
-      agents_path(organization, project: "flights"),
+      agents_path(organization, project: "accounts"),
       projects_path(organization),
       new_project_path(organization),
-      edit_project_path(organization, "flights"),
-      agent_path(organization, "riley", "flights-search-orchestrator"),
+      edit_project_path(organization, "accounts"),
+      agent_path(organization, "riley", "search-orchestrator"),
       edit_agent_path(organization, "ajay", "codex"),
       my_tasks_path(organization),
       my_task_path(organization, @task),

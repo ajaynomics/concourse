@@ -29,7 +29,7 @@ jobs:
 
       # The A2A TCK is a Python project; bin/a2a-tck runs it with `uv sync`.
       # A pinned version: resolving "latest" calls GitHub's API without a
-      # token from Gitea's runner, which shares a rate limit and fails the run.
+      # token from the CI runner, which shares a rate limit and fails the run.
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:

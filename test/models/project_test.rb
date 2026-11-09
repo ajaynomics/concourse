@@ -8,18 +8,18 @@ class ProjectTest < ActiveSupport::TestCase
   end
 
   test "the slug comes from the name, is unique within the organization, and survives a rename" do
-    first = @organization.projects.create!(name: "Auto Trips")
-    second = @organization.projects.create!(name: "Auto trips")
-    elsewhere = Organization.create!(name: "Elsewhere").projects.create!(name: "Auto trips")
+    first = @organization.projects.create!(name: "Billing Runs")
+    second = @organization.projects.create!(name: "Billing runs")
+    elsewhere = Organization.create!(name: "Elsewhere").projects.create!(name: "Billing runs")
 
-    assert_equal [ "auto-trips", "auto-trips-2", "auto-trips" ], [ first, second, elsewhere ].map(&:slug)
+    assert_equal [ "billing-runs", "billing-runs-2", "billing-runs" ], [ first, second, elsewhere ].map(&:slug)
 
-    first.update!(name: "Road trips")
-    assert_equal "auto-trips", first.reload.slug
+    first.update!(name: "Billing")
+    assert_equal "billing-runs", first.reload.slug
   end
 
   test "an agent joins only a project in its own organization" do
-    elsewhere = Organization.create!(name: "Elsewhere").projects.create!(name: "Flights")
+    elsewhere = Organization.create!(name: "Elsewhere").projects.create!(name: "Accounts")
 
     participation = elsewhere.participations.build(agent: @agent)
     assert_not participation.valid?
@@ -27,7 +27,7 @@ class ProjectTest < ActiveSupport::TestCase
   end
 
   test "deleting a project keeps its agents" do
-    project = @organization.projects.create!(name: "Flights", agents: [ @agent ])
+    project = @organization.projects.create!(name: "Accounts", agents: [ @agent ])
 
     project.destroy!
 
@@ -38,7 +38,7 @@ class ProjectTest < ActiveSupport::TestCase
   test "an agent that moves to another organization leaves its projects" do
     elsewhere = Organization.create!(name: "Elsewhere")
     @ajay.organizations << elsewhere
-    @organization.projects.create!(name: "Flights", agents: [ @agent ])
+    @organization.projects.create!(name: "Accounts", agents: [ @agent ])
 
     @agent.update!(organization: elsewhere)
 
