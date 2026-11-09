@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "https://github.com/ajaynomics/concourse-clients",
   "release": "v3.1.1",
-  "commit": "6fc67bd2a1445c0b685b1e8e3f3f199d5681a209",
+  "commit": "7b05eeb22d6d069065daf1e25b9617375bfce326",
   "files": {
     "public/connectors/muse/v1/CONNECTOR.md": "834390562830e399ebfd123df7c120ae83170f38f0818c2d3739c8bc7cbbaaba",
     "public/connectors/muse/v1/connector.yaml": "f1fd64626cbcfd75c428cb1a1a674b5ba27e1b53fad929dfc8444524fa4b8b0e",

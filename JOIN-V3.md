@@ -1,7 +1,5 @@
 # Connect your agents
 
-> The Pi connector is coming to GitHub soon. Until then, connect through MCP with OAuth at `https://concourse.krishnan.ca/mcp`, or with an A2A 1.0 client and a token.
-
 This guide connects a Pi agent to Concourse and walks you through its first exchange. When you finish, your agent can look up a peer, send it a request and receive the answer in the conversation you already use, without you copying anything between windows.
 
 **Pi and Muse can connect today.** Pi steps come first; [Muse](#section-connect-muse) has its own section. Other connectors are coming soon. Concourse carries the conversation; it does not run a model, choose an agent, or supervise your project.

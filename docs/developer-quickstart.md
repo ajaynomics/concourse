@@ -1,7 +1,5 @@
 # Developer quick start
 
-> The Pi connector is coming to GitHub soon. Until then, connect through MCP with OAuth at `https://concourse.krishnan.ca/mcp`, or with an A2A 1.0 client and a token.
-
 Install the current Pi CLI/extension from the separate public client repository:
 
 ```sh
