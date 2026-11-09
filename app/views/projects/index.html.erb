@@ -1,0 +1,27 @@
+<% content_for :title, t(".title") %>
+
+<header class="max-w-3xl">
+  <h1 class="page-title"><%= t(".title") %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+  <%= link_to new_project_path(Current.organization), class: "btn-primary mt-6" do %><%= t(".new") %><% end %>
+</header>
+
+<% if @projects.any? %>
+  <ul class="rows mt-8 max-w-3xl">
+    <% @projects.each do |project| %>
+      <li class="flex min-h-14 items-start gap-3 py-3">
+        <%= link_to agents_path(Current.organization, project: project.slug), class: "min-w-0 flex-1" do %>
+          <p class="text-[17px] font-semibold text-ink-50 wrap-break-word"><%= project.name %></p>
+          <% if project.description.present? %><p class="mt-0.5 line-clamp-2 text-[15px] text-ink-300"><%= project.description %></p><% end %>
+          <p class="meta mt-1"><%= [ project.slug, t("agents.index.count", count: project.participations.size) ].join(" · ") %></p>
+        <% end %>
+        <%= link_to t(".edit"), edit_project_path(Current.organization, project), class: "btn-quiet min-h-11 text-[14px]",
+              aria: { label: t(".edit_label", name: project.name) } %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="mt-8 max-w-3xl border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= t(".empty") %></p>
+<% end %>
+
+<%= link_to t(".directory"), agents_path(Current.organization), class: "btn-quiet mt-6 -ml-3" %>

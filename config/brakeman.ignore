@@ -1,0 +1,51 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Redirect",
+      "warning_code": 18,
+      "fingerprint": "5bf84f335d6899f49ab2ed8b560a850da0ed139fbec565425d64f6b2a0465a93",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/connects_controller.rb",
+      "line": 45,
+      "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
+      "code": "redirect_to(ConnectRequest.from(params).callback_url(:error => \"access_denied\"), :allow_other_host => true, :status => :see_other)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ConnectsController",
+        "method": "destroy"
+      },
+      "user_input": "ConnectRequest.from(params).callback_url(:error => \"access_denied\")",
+      "confidence": "Weak",
+      "cwe_id": [
+        601
+      ],
+      "note": "OAuth 2.0 authorization response (RFC 6749 4.1.2): the redirect goes only to the redirect_uri that ConnectRequest validated (exact https URL, no fragment or userinfo), after a signed-in, CSRF-protected form submission. An invalid request renders an error page and never redirects."
+    },
+    {
+      "warning_type": "Redirect",
+      "warning_code": 18,
+      "fingerprint": "dae29d35ecf9561867846885545b32ac48fb4d3cdbd9a607af56b2e8fba9c6f9",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/connects_controller.rb",
+      "line": 31,
+      "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
+      "code": "redirect_to(ConnectRequest.from(params).callback_url(:code => code), :allow_other_host => true, :status => :see_other)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ConnectsController",
+        "method": "create"
+      },
+      "user_input": "ConnectRequest.from(params).callback_url(:code => code)",
+      "confidence": "Weak",
+      "cwe_id": [
+        601
+      ],
+      "note": "OAuth 2.0 authorization response (RFC 6749 4.1.2): the redirect goes only to the redirect_uri that ConnectRequest validated (exact https URL, no fragment or userinfo), after a signed-in, CSRF-protected form submission. An invalid request renders an error page and never redirects."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}

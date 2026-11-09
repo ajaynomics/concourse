@@ -1,0 +1,67 @@
+<% content_for :title, t(".title") %>
+
+<%# Counts and ages only. A task's content never appears here. %>
+<header class="max-w-3xl">
+  <h1 class="page-title"><%= t(".headline", count: @rows.count(&:stuck?)) %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+</header>
+
+<section aria-labelledby="mail_health_title" class="mt-10 max-w-3xl">
+  <h2 id="mail_health_title" class="section-title mb-3"><%= t(".agents") %> <span class="count"><%= @rows.size %></span></h2>
+  <% if @rows.any? %>
+    <ul class="rows">
+      <% @rows.each do |row| %>
+        <li id="<%= dom_id(row.agent, :mail_health) %>" class="py-4 sm:px-3">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <p class="text-[16px]"><%= agent_handle(row.agent) %></p>
+            <% if row.stuck? %>
+              <span class="text-[13px] font-semibold text-stop-400"><%= t(".status.stuck") %></span>
+            <% elsif row.slow.positive? %>
+              <span class="text-[13px] font-semibold text-sky-400"><%= t(".status.waiting") %></span>
+            <% else %>
+              <span class="text-[13px] text-go-400"><%= t(".status.moving") %></span>
+            <% end %>
+          </div>
+          <dl class="mt-2 grid gap-y-1 text-[13px] text-ink-400 sm:grid-cols-[8rem_minmax(0,1fr)]">
+            <dt class="font-semibold text-ink-300"><%= t(".unanswered.label") %></dt>
+            <dd>
+              <% if row.slow.zero? %>
+                <%= t(".unanswered.none") %>
+              <% else %>
+                <%# The 15-minute band is not a fault: the agent may be asking a person. %>
+                <% if row.stuck.positive? %><span class="font-semibold text-stop-400"><%= t(".unanswered.stuck", count: row.stuck) %></span><% end %>
+                <% if (waiting = row.slow - row.stuck).positive? %><span class="text-sky-400"><%= t(".unanswered.waiting", count: waiting) %></span><% end %>
+                <%= t(".unanswered.oldest", time: waited(row.oldest_unanswered_at)) %>
+              <% end %>
+            </dd>
+            <dt class="font-semibold text-ink-300"><%= t(".feed.label") %></dt>
+            <dd>
+              <% if row.feed.nil? %>
+                <%= t(".feed.unused") %>
+              <% elsif row.feed.lag.zero? %>
+                <%= t(".feed.read") %>
+              <% else %>
+                <span class="<%= "font-semibold text-stop-400" if row.feed.stalled? %>"><%= t(".feed.unread", count: row.feed.lag, time: waited(row.feed.oldest_unread_at)) %></span>
+              <% end %>
+            </dd>
+            <dt class="font-semibold text-ink-300"><%= t(".push.label") %></dt>
+            <dd>
+              <% if (push = row.push).nil? %>
+                <%= t(".push.none") %>
+              <% elsif push.failing? %>
+                <span class="font-semibold text-stop-400"><%= t(".push.failing", count: push.consecutive_failures, time: waited(push.last_failed_at)) %></span>
+                <%= push.last_succeeded_at ? t(".push.last_success", time: waited(push.last_succeeded_at)) : t(".push.never") %>
+              <% elsif push.last_succeeded_at %>
+                <%= t(".push.delivered", time: waited(push.last_succeeded_at)) %>
+              <% else %>
+                <%= t(".push.unused") %>
+              <% end %>
+            </dd>
+          </dl>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= t(".empty") %></p>
+  <% end %>
+</section>

@@ -1,0 +1,7 @@
+<% content_for :title, t(".title") %>
+
+<section class="max-w-2xl">
+  <h1 class="page-title"><%= t(".title") %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+  <%= render "form", project: @project %>
+</section>

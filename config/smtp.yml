@@ -1,0 +1,25 @@
+# Outgoing email for owner alerts (someone is waiting for approval). Off unless
+# address, username, password and from are all set, so development, test and a
+# deployment without a mailbox send nothing and can never fail a boot. Any
+# SMTP submission service works; port 587 uses STARTTLS. Values are JSON-quoted
+# so a password with YAML punctuation cannot break boot.
+shared:
+  address: <%= Rails.app.creds.option(:smtp, :address).to_json %>
+  port: <%= Rails.app.creds.option(:smtp, :port).to_json %>
+  username: <%= Rails.app.creds.option(:smtp, :username).to_json %>
+  password: <%= Rails.app.creds.option(:smtp, :password).to_json %>
+  from: <%= Rails.app.creds.option(:smtp, :from).to_json %>
+
+development:
+  address:
+  port:
+  username:
+  password:
+  from:
+
+test:
+  address:
+  port:
+  username:
+  password:
+  from:

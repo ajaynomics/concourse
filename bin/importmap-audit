@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# bin/importmap audit posts to npm's bulk advisory API. A Net::ReadTimeout is
+# not a vulnerability, and during a degraded registry it blocked every PR.
+# Real findings still fail the gate: only a transport error is retried.
+set -u
+cd "$(dirname "$0")/.."
+
+attempt=0
+while true; do
+  attempt=$((attempt + 1))
+  output="$(bin/importmap audit 2>&1)"
+  status=$?
+  printf '%s\n' "$output"
+  if [ "$status" -eq 0 ]; then
+    exit 0
+  fi
+  if ! printf '%s\n' "$output" | grep -q "transport error"; then
+    exit "$status"
+  fi
+  if [ "$attempt" -ge 8 ]; then
+    echo "npm audit still unreachable after ${attempt} tries" >&2
+    exit "$status"
+  fi
+  echo "npm audit transport failed (attempt ${attempt}), retrying..." >&2
+  sleep $((attempt * 5))
+done

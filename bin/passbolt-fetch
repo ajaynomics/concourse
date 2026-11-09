@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Resolve every Passbolt value a Kamal secrets file needs with ONE sign-in.
+#
+#   PASSBOLT=$(bin/passbolt-fetch \
+#     RAILS_MASTER_KEY=<id> \
+#     OIDC__CLIENT_ID=<id>:username \
+#     PRIVATE_KEY=<id>:description \
+#     VAPID_PRIVATE_KEY=<id>:description:VAPID_PRIVATE_KEY)
+#   RAILS_MASTER_KEY=$(kamal secrets extract RAILS_MASTER_KEY $PASSBOLT)
+#   DATABASE_URL=postgres://app:$DB_PASSWORD@db:5432/app     # composing still works
+#
+# Fields: password (default), username, description (whole), description:KEY
+# (the value of the one line `KEY=value` in the description).
+# Prints shell-quoted JSON {NAME: value}, the shape `kamal secrets extract` reads.
+# Values travel only through pipes: never argv, never disk. On any failure it
+# prints nothing to stdout, names (never values) go to stderr, and exits 1, so
+# extract fails and Kamal stops instead of deploying a blank.
+set -euo pipefail
+uuid='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+specs=() ids=()
+for arg in "$@"; do
+  name=${arg%%=*} ref=${arg#*=}
+  IFS=: read -r id field key extra <<<"$ref"
+  field=${field:-password} key=${key:-}
+  ok=1
+  [[ $arg == *=* && $name =~ ^[A-Z][A-Z0-9_]*$ && $id =~ $uuid && -z ${extra:-} ]] || ok=
+  case $field in
+    password|username) [[ -z $key ]] || ok= ;;
+    description) [[ -z $key || $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || ok= ;;
+    *) ok= ;;
+  esac
+  [[ $ok ]] || { echo "passbolt-fetch: bad argument for ${name:-?}" >&2; exit 1; }
+  specs+=("$name"$'\t'"$id"$'\t'"$field"$'\t'"$key") ids+=("$id")
+done
+((${#specs[@]})) || { echo "passbolt-fetch: nothing to fetch" >&2; exit 1; }
+
+filter=$(printf '%s\n' "${ids[@]}" | sort -u | sed 's/.*/ID == "&"/' | paste -sd'|' | sed 's/|/ || /g')
+passbolt list resource --filter "$filter" \
+    --column id --column username --column password --column description -j |
+  jq -r --args '
+    . as $rows
+    | reduce ($ARGS.positional[] | split("\t")) as [$name, $id, $field, $key] ({};
+        [$rows[] | select(.id == $id)] as $match
+        | if ($match | length) != 1 then error("\($name): resource not found exactly once") else . end
+        | ($match[0][$field] // "") as $text
+        | (if $key == "" then $text
+           else [$text | gsub("\r"; "") | split("\n")[] | select(startswith($key + "=")) | ltrimstr($key + "=")] as $lines
+             | if ($lines | length) != 1 then error("\($name): \($key)= is not on exactly one description line") else $lines[0] end
+           end) as $value
+        | if ($value | type) != "string" or ($value | length) == 0 then error("\($name): empty") else . + {($name): $value} end)
+    | tojson | @sh' "${specs[@]}"

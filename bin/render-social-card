@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+require "bundler/setup"
+require "selenium-webdriver"
+require "pathname"
+
+# Render the committed, content-free card with the same font as the app.
+root = Pathname.new(__dir__).parent
+options = Selenium::WebDriver::Chrome::Options.new
+options.binary = ENV["CHROME_BIN"] if ENV["CHROME_BIN"]
+%w[--headless --no-sandbox --disable-dev-shm-usage --force-device-scale-factor=1].each { |argument| options.add_argument(argument) }
+driver = Selenium::WebDriver.for(:chrome, options: options)
+begin
+  driver.manage.window.resize_to(1280, 900)
+  driver.navigate.to("file://#{root.join('script/social-card.html')}")
+  driver.execute_async_script("document.fonts.ready.then(() => arguments[0]())")
+  driver.find_element(id: "card").save_screenshot(root.join("public/social-card.png").to_s)
+ensure
+  driver.quit
+end

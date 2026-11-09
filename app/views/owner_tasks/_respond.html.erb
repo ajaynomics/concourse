@@ -1,0 +1,51 @@
+<%# The owner acting as their own agent on this task, at the foot of the
+    thread. %>
+<% sides = task.sides_for(Current.user) %>
+<% if sides.any? %>
+  <div id="respond" class="mt-10 space-y-6">
+    <% if task.terminal? %>
+      <p class="border-y border-edge/[0.09] py-5 text-[15px] text-ink-400"><%= t("owner_tasks.respond.finished") %></p>
+    <% else %>
+      <% sides.each do |side| %>
+        <% next if side == "recipient" && !task.inbox? %>
+        <% next if side == "caller" && task.input_delivery_unconfirmed? %>
+        <% agent = task.agent_on(side) %>
+        <%= form_with url: my_task_response_path(Current.organization, task), method: :post, class: class_names("max-w-3xl", "ml-auto": side == "recipient"),
+              data: { controller: "composer", action: "keydown.meta+enter->composer#submit keydown.ctrl+enter->composer#submit" } do |form| %>
+          <%= form.hidden_field :side, value: side %>
+          <p class="text-[15px] font-semibold text-ink-50">
+            <%= t("owner_tasks.respond.#{side}.title") %>
+            <span class="font-normal text-ink-400"><%= t("owner_tasks.respond.as") %> <%= agent_handle(agent, link: false, mine: true) %></span>
+          </p>
+          <p class="meta mt-0.5"><%= t("owner_tasks.respond.#{side}.hint") %></p>
+          <p id="respond_hint_<%= side %>" class="meta mt-1"><%= t("owner_tasks.respond.attribution") %> <%= t("owner_tasks.respond.shortcut") %></p>
+          <div class="composer mt-3">
+            <%= form.label :text, t("owner_tasks.respond.message"), class: "sr-only", for: "respond_text_#{side}" %>
+            <%= form.text_area :text, id: "respond_text_#{side}", rows: 3, required: side == "caller",
+                  placeholder: t("owner_tasks.respond.#{side}.placeholder"), aria: { describedby: "respond_hint_#{side}" } %>
+            <div class="flex flex-wrap items-center gap-2 px-1 pt-1">
+              <% if side == "recipient" %>
+                <%= form.label :state, t("owner_tasks.respond.state"), class: "sr-only", for: "respond_state" %>
+                <%= form.select :state,
+                      [ [ t("owner_tasks.respond.keep_state", state: state_label(task.state)), "" ] ] +
+                        (Task::REPLY_STATES - [ task.state ]).map { |state| [ t("owner_tasks.respond.move_to", state: state_label(state)), state ] },
+                      {}, id: "respond_state",
+                      class: "min-h-10 min-w-0 flex-1 rounded-full border-0 bg-edge/[0.05] px-4 text-[14px] font-semibold text-ink-100 focus:outline-2 focus:outline-sky-500 sm:flex-none" %>
+              <% end %>
+              <%= form.button type: "submit", class: "btn-primary ml-auto min-h-10", data: { composer_target: "submit" } do %>
+                <%= t("owner_tasks.respond.#{side}.submit") %> <%= icon(:arrow, css: "size-4") %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if sides.include?("caller") && (!task.held? || task.relay_task) %>
+        <%= button_to my_task_cancellation_path(Current.organization, task), method: :post, class: "btn-danger -ml-3 text-[14px]",
+              form: { data: { turbo_confirm: t("owner_tasks.respond.cancel_confirm") } } do %>
+          <%= icon(:close, css: "size-4") %> <%= t("owner_tasks.respond.cancel") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

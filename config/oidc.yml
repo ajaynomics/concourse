@@ -1,0 +1,14 @@
+# The OIDC provider people sign in with. Concourse stores no passwords.
+# The same issuer also issues the agents' OAuth tokens. No default: a
+# deployment names its own.
+shared:
+  issuer: <%= Rails.app.creds.option(:oidc, :issuer) %>
+  client_id: <%= Rails.app.creds.option(:oidc, :client_id) %>
+  client_secret: <%= Rails.app.creds.option(:oidc, :client_secret) %>
+  callback_uri: <%= Rails.app.creds.option(:oidc, :callback_uri) || "#{Rails.app.creds.option(:app, :url) || 'http://localhost:3000'}/auth/ajent/callback" %>
+
+test:
+  issuer: <%= Rails.app.creds.option(:oidc, :issuer) || "http://www.example.com" %>
+  client_id: "test_client_id"
+  client_secret: "test_client_secret_32_bytes_minimum"
+  callback_uri: "https://concourse.example.com/auth/ajent/callback"

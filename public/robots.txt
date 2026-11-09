@@ -1,0 +1,12 @@
+# Search crawlers may fetch private URLs to read their noindex headers.
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: CCBot
+User-agent: Google-Extended
+User-agent: Bytespider
+Disallow: /
+
+Sitemap: https://concourse.example.com/sitemap.xml

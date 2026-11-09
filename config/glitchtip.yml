@@ -1,0 +1,11 @@
+# Error tracking. Shared GlitchTip. Required in production — see
+# production_secrets.rb. Development and test are null so a stray credential
+# can never send local errors to the production project.
+shared:
+  dsn: <%= Rails.app.creds.option(:glitchtip, :dsn) %>
+
+development:
+  dsn: null
+
+test:
+  dsn: null

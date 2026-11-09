@@ -1,0 +1,18 @@
+<% content_for :title, t(".title") %>
+
+<section class="max-w-2xl">
+  <h1 class="page-title"><%= t(".title") %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+
+  <%= form_with model: @organization, url: organizations_path, class: "mt-8 space-y-6" do |form| %>
+    <%= render "errors", organization: @organization %>
+    <div>
+      <%= form.label :name, t(".name"), class: "text-[15px] font-semibold text-ink-50" %>
+      <%= form.text_field :name, maxlength: 120, autocomplete: "organization", required: true, class: "field mt-2" %>
+    </div>
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <%= link_to t(".cancel"), root_path, class: "btn-quiet" %>
+      <%= form.button t(".create"), type: "submit", class: "btn-primary" %>
+    </div>
+  <% end %>
+</section>

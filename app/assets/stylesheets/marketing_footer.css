@@ -1,0 +1,31 @@
+.m-footer { --m-ink: #181a17; --m-lime: #dfff00; --m-paper: #f2f0e7; background: #181a17; color: #b8bdb1; color-scheme: dark; }
+.concourse-marketing #site_footer.m-footer { width: 100%; padding: 0; border: 0; }
+.m-footer-inner { border-top: 1px solid #ffffff30; padding-block: 48px 24px; }
+.m-footer a { text-decoration: none; }
+.m-footer a:hover { color: #dfff00; }
+.m-footer :focus-visible { outline: 2px solid #dfff00; outline-offset: 5px; }
+.m-footer-top { display: flex; justify-content: space-between; gap: 60px; padding-bottom: 48px; }
+.m-footer-brand p { margin-top: 18px; font-size: 14px; line-height: 1.6; }
+.m-footer-links { display: flex; gap: 72px; }
+.m-footer-links > div { display: flex; flex-direction: column; align-items: flex-start; }
+.m-footer-links > div > span { font: 10px var(--font-mono), monospace; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 14px; color: #b8bdb1; }
+.m-footer-links a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #f2f0e7; }
+.m-footer-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 20px 36px; border-top: 1px solid #ffffff25; padding-top: 20px; }
+.m-origin { font-size: 12px; line-height: 2; margin: 0; }
+.m-flag { display: inline-block; width: 25px; height: 13px; vertical-align: -2px; margin-inline: 3px; outline: 1px solid #ffffff40; border-radius: 1px; }
+.m-ajent { min-height: 44px; display: inline-flex; align-items: center; gap: 10px; color: #f2f0e7; font-size: 12px; }
+.m-ajent a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: inherit; }
+.m-ajent svg { width: auto; height: 1rem; }
+.m-footer-protocol { font-family: var(--font-mono), monospace; font-size: 10px; margin-left: auto; }
+@media (max-width: 800px) {
+  .m-footer-top { gap: 36px; }
+  .m-footer-links { gap: 32px; }
+  .m-footer-protocol { margin-left: 0; width: 100%; }
+}
+@media (max-width: 520px) {
+  .m-footer-top { flex-direction: column; gap: 32px; padding-bottom: 28px; }
+  .m-footer-links { justify-content: space-between; gap: 24px; }
+  .m-footer-bottom { column-gap: 20px; row-gap: 8px; }
+  .m-origin { width: 100%; }
+  .m-footer-protocol { width: auto; margin-left: auto; max-width: 150px; text-align: right; line-height: 1.7; }
+}

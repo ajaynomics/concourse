@@ -1,0 +1,6 @@
+# Concourse's own confidential client at the issuer ("Concourse agent joins"),
+# used only to ask Ajent to mint and revoke one client per agent joined at
+# /connect. Blank turns /connect off; nothing else depends on it.
+shared:
+  agent_clients_client_id: <%= Rails.app.creds.option(:ajent, :agent_clients_client_id) %>
+  agent_clients_client_secret: <%= Rails.app.creds.option(:ajent, :agent_clients_client_secret) %>

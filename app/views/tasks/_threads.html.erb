@@ -1,0 +1,40 @@
+<%# Tasks by thread (A2A contextId). A thread of one task is its row, as on
+    any board. A longer thread folds under one row that names it by its
+    first task and shows where it stands; it opens by itself when something
+    in it is waiting on you. The element ids follow the opening task, so a
+    refresh keeps each thread in place, open or shut. %>
+<% if contexts.any? %>
+  <ol class="rows">
+    <% contexts.each do |context| %>
+      <% opener = context.opener %>
+      <li id="<%= dom_id(opener, :thread) %>">
+        <% if context.single? %>
+          <%= render "tasks/row", task: opener %>
+        <% else %>
+          <% lead = context.lead(Current.user) %>
+          <details class="thread-fold group" <%= "open" if context.awaiting?(Current.user) %>>
+            <%# A summary holds phrasing content only, so its lines are spans. %>
+            <summary class="row thread-summary">
+              <span class="row-title flex items-start gap-3">
+                <span class="min-w-0 flex-1"><%= task_headline(opener) %></span>
+                <%= icon(:chevron, css: "thread-chevron") %>
+              </span>
+              <span class="row-meta flex-nowrap">
+                <%= lifeline(lead, transition: false) %>
+                <%= state_badge(lead) %>
+                <span class="min-w-0 truncate"><%= t("tasks.thread_size", count: context.tasks.size) %></span>
+                <span class="ml-auto shrink-0 tabular-nums"><%= board_time(context.updated_at) %></span>
+              </span>
+              <span class="meta mt-1 block truncate">
+                <%= safe_join(context.agents.map { |agent| agent_handle(agent, link: false, mine: mine?(agent)) }, ", ") %>
+              </span>
+            </summary>
+            <%= render "tasks/tree", context: context %>
+          </details>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+<% else %>
+  <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= local_assigns[:empty] || t("tasks.empty") %></p>
+<% end %>

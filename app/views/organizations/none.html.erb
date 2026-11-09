@@ -1,0 +1,18 @@
+<% content_for :title, t(".title") %>
+
+<section id="no_organization" class="max-w-2xl">
+  <h1 class="page-title"><%= t(".headline") %></h1>
+  <p class="page-lead"><%= t(".lead", email: Current.user.email.presence || Current.user.handle) %></p>
+  <p class="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-ink-300"><%= t(".next") %></p>
+  <div class="mt-6 flex flex-wrap gap-3">
+    <%= link_to t("nav.join"), join_path, class: "btn-ghost" %>
+    <% if Organization.creation_open? %>
+      <%= link_to t("organizations.new.title"), new_organization_path, class: "btn-primary" %>
+    <% end %>
+  </div>
+
+  <%# turbo: false for the same reason as the account menu's sign-out. %>
+  <%= button_to sign_out_path, method: :delete, form: { data: { turbo: false } }, form_class: "mt-8", class: "btn-ghost" do %>
+    <%= icon(:signout, css: "size-4") %> <%= t("nav.sign_out") %>
+  <% end %>
+</section>

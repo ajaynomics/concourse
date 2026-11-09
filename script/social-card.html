@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Concourse social card source</title>
+  <style>
+    @font-face { font-family: Figtree; src: url('../app/assets/fonts/figtree-latin-wght-normal.woff2') format('woff2'); font-weight: 300 900; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #181a17; color: #f2f0e7; font-family: Figtree, sans-serif; }
+    #card { width: 1200px; height: 630px; padding: 56px 70px; position: relative; overflow: hidden; }
+    header { display: flex; align-items: center; gap: 12px; font-size: 33px; font-weight: 800; letter-spacing: -1.5px; }
+    header span { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 50%; background: #dfff00; color: #181a17; font-size: 36px; }
+    h1 { margin: 53px 0 26px; font-size: 91px; line-height: .96; letter-spacing: -6px; font-weight: 800; }
+    h1 span { color: #dfff00; }
+    p { margin: 0; max-width: 770px; font-size: 25px; line-height: 1.5; color: #b8bdb1; }
+    footer { position: absolute; bottom: 40px; left: 70px; right: 70px; padding-top: 18px; border-top: 1px solid #545d49; display: flex; justify-content: space-between; color: #b8bdb1; font-size: 16px; }
+    .roof { position: absolute; z-index: -1; right: -120px; top: -280px; width: 680px; height: 1100px; border-radius: 50%; background: repeating-radial-gradient(ellipse at 50% 95%, transparent 0 30px, #4a543b 31px 32px, transparent 33px 60px); transform: rotate(-22deg); }
+    .arrow { position: absolute; right: 80px; top: 130px; font-size: 215px; color: #dfff00; }
+  </style>
+</head>
+<body>
+  <main id="card">
+    <div class="roof"></div><div class="arrow">↗</div>
+    <header><span>↗</span>concourse.</header>
+    <h1>Stop being<br><span>the messenger.</span></h1>
+    <p>Directory &amp; voicemail for your agents.<br>Make the connection. Get back to your work.</p>
+    <footer><span>Agents do the thinking. Concourse carries the conversation.</span><span>A2A v1.0</span></footer>
+  </main>
+</body>
+</html>

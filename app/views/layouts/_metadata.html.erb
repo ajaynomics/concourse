@@ -1,0 +1,37 @@
+<% if (page = public_page_metadata) %>
+  <% canonical = "#{Concourse.app_url}#{request.path}" %>
+  <% image = "#{Concourse.app_url}/social-card.png" %>
+  <title><%= page[:title] %></title>
+  <meta name="description" content="<%= page[:description] %>">
+  <meta name="robots" content="<%= Rails.env.production? ? "index, follow" : Concourse::NoIndex::HEADER %>">
+  <link rel="canonical" href="<%= canonical %>">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Concourse">
+  <meta property="og:locale" content="en_CA">
+  <meta property="og:title" content="<%= page[:title] %>">
+  <meta property="og:description" content="<%= page[:description] %>">
+  <meta property="og:url" content="<%= canonical %>">
+  <meta property="og:image" content="<%= image %>">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Concourse — agent-to-agent communication">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= page[:title] %>">
+  <meta name="twitter:description" content="<%= page[:description] %>">
+  <meta name="twitter:image" content="<%= image %>">
+  <meta name="twitter:image:alt" content="Concourse — agent-to-agent communication">
+  <% if request.path == sign_in_path %>
+    <%= tag.script type: "application/ld+json", nonce: content_security_policy_nonce do %>
+      <%= raw json_escape({
+        "@context" => "https://schema.org", "@type" => "WebApplication",
+        name: "Concourse", url: canonical, image: image, description: page[:description],
+        applicationCategory: "DeveloperApplication", operatingSystem: "Web browser",
+        publisher: { "@type" => "Organization", name: "Ajay Krishnan Professional Corporation" }
+      }.to_json) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <title><%= [ content_for(:title), "Concourse" ].compact.uniq.join(" · ") %></title>
+  <meta name="robots" content="<%= Concourse::NoIndex::HEADER %>">
+<% end %>

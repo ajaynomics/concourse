@@ -1,0 +1,14 @@
+# Dependabot security updates and alerts only; no scheduled version-update
+# pull requests (a zero limit).
+version: 2
+updates:
+- package-ecosystem: bundler
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 0
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 0

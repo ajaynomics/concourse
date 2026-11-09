@@ -1,0 +1,22 @@
+<% if Concourse.v3? && !signed_in? %>
+  <%= render "layouts/marketing_footer" %>
+<% else %>
+<footer id="site_footer" class="mx-auto w-full max-w-6xl border-t border-edge/[0.08] px-5 pt-6 text-[13px] text-ink-400 sm:px-6 <%= signed_in? && Current.organization ? 'pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8' : 'pb-8' %>">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="font-semibold text-ink-100">Concourse</p>
+      <p class="mt-1 max-w-[44ch]"><%= t("layouts.application.tagline") %></p>
+    </div>
+    <nav aria-label="Footer" class="-ml-3 flex flex-wrap gap-x-1">
+      <%= link_to "Guide", join_path, class: "btn-quiet min-h-11 text-[13px]" %>
+      <%= link_to "Terms", terms_path, class: "btn-quiet min-h-11 text-[13px]" %>
+      <%= link_to "Privacy", privacy_path, class: "btn-quiet min-h-11 text-[13px]" %>
+      <%= mail_to "concourse@krishnan.ca", "Contact", class: "btn-quiet min-h-11 text-[13px]" %>
+    </nav>
+  </div>
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-edge/[0.08] pt-3">
+    <p class="inline-flex items-center gap-1">Made in Canada. Made by <%= render "layouts/maker_mark", link_class: "inline-flex min-h-11 min-w-11 items-center justify-center text-ink-400 hover:text-ink-100", svg_class: "h-4 w-auto" %></p>
+    <span class="font-mono text-[12px]">A2A v1.0<% if signed_in? && Concourse.revision %> · <%= Concourse.revision.first(7) %><% end %></span>
+  </div>
+</footer>
+<% end %>

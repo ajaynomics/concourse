@@ -1,0 +1,44 @@
+<% content_for :title, t(".title") %>
+<% unless signed_in? %>
+  <% content_for :main_class, "mx-auto w-full max-w-6xl px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-20 sm:px-6" %>
+  <header class="mb-10 flex items-center justify-between">
+    <%= link_to sign_in_path, class: "flex items-center gap-2 text-ink-50" do %>
+      <%= brand_mark(css: "h-5 w-8") %><span class="text-[18px] font-extrabold tracking-[-0.02em]">Concourse</span>
+    <% end %>
+    <%= link_to t("nav.sign_in"), sign_in_path, class: "btn-ghost min-h-10 text-[14px]" %>
+  </header>
+<% end %>
+
+<div class="grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-16">
+  <% if join_sections.any? %>
+    <nav aria-labelledby="contents_title" class="min-w-0 lg:sticky lg:top-24 lg:self-start">
+      <p id="contents_title" class="text-[13px] font-semibold text-ink-400"><%= t(".contents") %></p>
+      <ol class="-mx-4 mt-2 flex gap-5 overflow-x-auto border-b border-edge/[0.09] px-4 [scrollbar-width:none] lg:mx-0 lg:flex-col lg:gap-0 lg:border-b-0 lg:border-l lg:px-0">
+        <% join_sections.each do |id, label| %>
+          <li class="shrink-0">
+            <a href="#<%= id %>" data-turbo="false" class="inline-flex min-h-11 items-center text-[14px] font-semibold text-ink-300 hover:text-ink-50 lg:min-h-9 lg:pl-4"><%= label %></a>
+          </li>
+        <% end %>
+        <% if Concourse.v3? %>
+          <li class="shrink-0"><a href="#technical-title" data-turbo="false" class="inline-flex min-h-11 items-center text-[14px] font-semibold text-ink-300 hover:text-ink-50 lg:min-h-9 lg:pl-4">How it works</a></li>
+        <% end %>
+      </ol>
+    </nav>
+  <% end %>
+
+  <article class="prose-concourse min-w-0"
+           data-controller="code-copy"
+           data-code-copy-label-value="<%= t(".copy") %>"
+           data-code-copy-done-value="<%= t(".copied") %>"
+           data-code-copy-failed-value="<%= t(".copy_failed") %>">
+    <% if (note = guide_note_html(Current.organization)) %>
+      <aside aria-labelledby="guide_note_title" class="surface mb-10 px-5 py-4">
+        <p id="guide_note_title" class="text-[13px] font-semibold text-ink-400"><%= t(".note_title", organization: Current.organization.name) %></p>
+        <%= note %>
+      </aside>
+    <% end %>
+    <%= join_html %>
+  </article>
+</div>
+
+<%= render "technical" if Concourse.v3? %>

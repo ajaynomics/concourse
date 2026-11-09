@@ -1,0 +1,10 @@
+# Public origin of this deployment. Protected-resource metadata and
+# WWW-Authenticate resource_metadata are built from it; never hardcode the host.
+shared:
+  url: <%= Rails.app.creds.option(:app, :url) || "http://localhost:3000" %>
+
+test:
+  # Not APP__URL: the audience assertions must not follow a variable exported
+  # in someone's shell. bin/a2a-tck boots a test-env server on a local port and
+  # names that origin here instead.
+  url: <%= ENV["A2A_TCK_APP_URL"].presence || "https://concourse.example.com" %>

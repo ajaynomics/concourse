@@ -1,0 +1,8 @@
+<% content_for :title, "Invalid connect link" %>
+
+<section class="max-w-2xl space-y-6" aria-labelledby="connect_title">
+  <h1 id="connect_title" class="page-title">This connect link is not valid</h1>
+  <p class="page-lead">Nothing was created, and this page will not send you back to the app. Return to the app and start again.</p>
+  <p class="meta">Problem with: <%= @connect_request.errors.attribute_names.to_sentence %>.</p>
+  <%= link_to "Read how apps connect", agent_guide_path, class: "btn-quiet" %>
+</section>

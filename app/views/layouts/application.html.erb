@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <%= render "layouts/metadata" %>
+    <%# viewport-fit=cover so the tab bar's safe-area padding clears the home
+        indicator; resizes-content so the keyboard never covers the search. %>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+    <meta name="application-name" content="Concourse">
+    <meta name="apple-mobile-web-app-title" content="Concourse">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%# default, not black-translucent: white status text is unreadable on sand. %>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#f6f2ef" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
+    <%# Live updates arrive as Turbo refresh signals on the "tasks" stream;
+        morph keeps scroll and focus instead of repainting the board. %>
+    <meta name="turbo-refresh-method" content="morph">
+    <meta name="turbo-refresh-scroll" content="preserve">
+    <meta name="view-transition" content="same-origin">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= action_cable_meta_tag %>
+    <%= yield :head %>
+
+    <link rel="manifest" href="<%= pwa_manifest_path(format: :json) %>">
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <%= preload_link_tag "figtree-latin-wght-normal.woff2", as: "font", type: "font/woff2", crossorigin: "anonymous" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <%# Rybbit, on every page, when a site id is configured. Blank renders
+        nothing, which keeps development and test quiet.
+
+        Replay records everything on these pages, unmasked: message and
+        artifact content, names, and what is typed into inputs. Rybbit masks
+        every input, passwords, and emails by default; the two attributes
+        turn that off. %>
+    <% if analytics_site_id.present? %>
+      <script src="<%= Concourse.config(:analytics, :host) %>/api/script.js" defer
+              data-site-id="<%= analytics_site_id %>"
+              data-replay-mask-all-inputs="false"
+              data-replay-mask-input-options='{"password":false,"email":false}'></script>
+    <% end %>
+  </head>
+
+  <body class="min-h-dvh <%= content_for(:body_class) %>"
+        data-controller="analytics ahoy"
+        data-analytics-user-id-value="<%= analytics_user_id %>"
+        data-analytics-traits-value="<%= analytics_traits.to_json %>">
+    <a data-turbo="false" href="#main" class="skip-link"><%= t(".skip_to_content") %></a>
+
+    <% if signed_in? %>
+      <%= turbo_stream_from Current.organization, "tasks", channel: OrganizationTasksChannel if Current.organization && live_updates? %>
+
+      <header id="site_header" class="sticky top-0 z-40 border-b border-edge/[0.08] bg-ink-900 pt-[env(safe-area-inset-top)]">
+        <div class="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-20 sm:px-6">
+          <%= link_to Current.organization ? organization_root_path(Current.organization) : root_path, class: "-ml-1 flex min-h-11 min-w-0 items-center gap-2 pr-2 text-ink-50" do %>
+            <%= brand_mark(css: "h-5 w-8 shrink-0") %>
+            <span class="min-w-0">
+              <span class="block text-[18px] font-extrabold tracking-[-0.02em]">Concourse</span>
+              <% if Current.organization %>
+                <span id="organization_context" class="block max-w-[12rem] truncate text-[12px] font-medium text-ink-300" title="<%= Current.organization.name %>"><%= Current.organization.name %></span>
+              <% end %>
+            </span>
+          <% end %>
+
+          <% if Current.organization %>
+            <nav class="ml-4 hidden items-center gap-4 md:flex" aria-label="Primary">
+              <%= nav_link t("nav.board"), organization_root_path(Current.organization) %>
+              <%= nav_link t("nav.agents"), agents_path(Current.organization), active: section_active?(agents_path(Current.organization)) %>
+              <%= nav_link t("nav.tasks"), my_tasks_path(Current.organization), active: section_active?(my_tasks_path(Current.organization)) %>
+              <%= nav_link t("projects.index.title"), projects_path(Current.organization), active: section_active?(projects_path(Current.organization)) %>
+              <%= nav_link t("nav.join"), join_path %>
+            </nav>
+          <% end %>
+
+          <div class="ml-auto flex items-center gap-3">
+            <% if Current.organization %>
+              <span class="live hidden lg:inline-grid" aria-live="polite" aria-atomic="true">
+                <span class="live-on"><%= t(".live") %></span>
+                <span class="live-off"><%= t(".offline") %></span>
+              </span>
+            <% end %>
+
+            <details class="relative" data-controller="dropdown" data-action="click@document->dropdown#closeOutside keydown.esc@document->dropdown#close">
+              <summary class="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center gap-2 rounded-full select-none hover:bg-edge/[0.05] [&::-webkit-details-marker]:hidden" aria-label="<%= t(".menu") %>">
+                <span class="grid size-8 place-items-center rounded-full bg-ink-50 text-[14px] font-bold text-ink-900"><%= Current.user.to_s.first.upcase %></span>
+                <span class="hidden max-w-28 truncate text-[15px] font-semibold text-ink-100 xl:inline"><%= Current.user.handle %></span>
+                <%= icon(:chevron, css: "size-3.5 rotate-90 text-ink-400") %>
+              </summary>
+              <div class="account-menu surface absolute right-0 z-50 mt-2 w-72 overflow-y-auto p-1.5 shadow-[0_30px_45px_5px_rgb(0_0_0/0.10),0_12px_16px_-6px_rgb(0_0_0/0.08)] animate-arrive"
+                   data-controller="push" data-push-key-value="<%= PushSubscription.public_key if PushSubscription.configured? %>" data-push-url-value="<%= push_subscription_path %>" data-push-endpoint-value="<%= session[:push_endpoint] %>"
+                   data-push-on-value="<%= t(".alerts_on") %>" data-push-off-value="<%= t(".alerts_off") %>" data-push-messages-value="<%= t(".notifications").to_json %>">
+                <div class="px-3 py-3">
+                  <p class="truncate text-[15px] font-semibold text-ink-50"><%= Current.user %></p>
+                  <p class="meta truncate"><%= [ Current.user.handle, Current.organization&.name ].compact.join(" · ") %></p>
+                </div>
+                <div class="mx-3 my-1 border-t border-edge/[0.08]"></div>
+                <% menu_item = "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] text-ink-100 hover:bg-edge/[0.05]" %>
+                <% other_organizations = Current.user.organizations.where.not(id: Current.organization&.id).order(:name) %>
+                <% if other_organizations.any? %>
+                  <div id="organization_switcher" role="group" aria-label="<%= t(".switch") %>">
+                    <p class="meta px-3 pt-1 pb-1"><%= t(".switch") %></p>
+                    <% other_organizations.each do |organization| %>
+                      <%= link_to organization_root_path(organization), class: menu_item do %>
+                        <%= icon(:switch, css: "size-[18px] text-ink-400") %> <span class="truncate"><%= organization.name %></span>
+                      <% end %>
+                    <% end %>
+                  </div>
+                  <div class="mx-3 my-1 border-t border-edge/[0.08]"></div>
+                <% end %>
+                <% if Current.organization_owner? %>
+                  <%= link_to edit_organization_path(Current.organization), class: menu_item do %>
+                    <%= icon(:settings, css: "size-[18px] text-ink-400") %> <%= t(".settings") %>
+                  <% end %>
+                <% end %>
+                <% if Organization.creation_open? %>
+                  <%= link_to new_organization_path, class: menu_item do %>
+                    <%= icon(:plus, css: "size-[18px] text-ink-400") %> <%= t(".new_organization") %>
+                  <% end %>
+                <% end %>
+                <%# Task broadcasts morph the header too; retain this browser's
+                    setting and any in-flight permission request, not the account menu. %>
+                <div id="browser-notification-setting" data-turbo-permanent>
+                  <button type="button" hidden disabled data-push-target="toggle" data-action="push#toggle" aria-pressed="false" aria-describedby="browser-notification-status" class="<%= menu_item %>">
+                    <%= icon(:bell, css: "size-[18px] text-ink-400") %> <span data-push-target="label"><%= t(".alerts_on") %></span>
+                  </button>
+                  <p id="browser-notification-status" data-push-target="status" role="status" class="px-3 py-2 text-[12px] text-ink-400"><%= PushSubscription.configured? ? t(".notifications.disabled") : t(".notifications.unconfigured") %></p>
+                </div>
+                <button id="pwa-install-button" type="button" hidden data-turbo-permanent data-controller="pwa-install" data-action="pwa-install#prompt" class="<%= menu_item %>">
+                  <%= icon(:install, css: "size-[18px] text-ink-400") %> <%= t(".install") %>
+                </button>
+                <%= link_to join_path, class: menu_item do %>
+                  <%= icon(:guide, css: "size-[18px] text-ink-400") %> <%= t("nav.join") %>
+                <% end %>
+                <%# turbo: false is load-bearing. Rybbit's clearUserId() does not
+                    reset its live replay recorder, so a Turbo sign-out would stamp
+                    the next person's session with this user. A real document
+                    load rebuilds the recorder from cleared storage. %>
+                <%= button_to sign_out_path, method: :delete, form: { data: { turbo: false, action: "submit->push#forget" } }, form_class: "contents", class: menu_item do %>
+                  <%= icon(:signout, css: "size-[18px] text-ink-400") %> <%= t("nav.sign_out") %>
+                <% end %>
+              </div>
+            </details>
+          </div>
+        </div>
+      </header>
+    <% end %>
+
+    <%= render "layouts/flash" %>
+
+    <main id="main" tabindex="-1" class="<%= content_for(:main_class) || "mx-auto w-full max-w-6xl px-4 pt-7 pb-16 sm:px-6 sm:pt-12 md:pb-20" %>">
+      <%= yield %>
+    </main>
+
+    <%= render "layouts/footer" %>
+
+    <% if signed_in? %>
+      <% if Current.organization %>
+        <nav id="tab_bar" aria-label="Primary" class="fixed inset-x-0 bottom-0 z-40 border-t border-edge/[0.08] bg-ink-900 pb-[env(safe-area-inset-bottom)] md:hidden">
+          <div class="mx-auto flex max-w-md">
+            <%= tab_link t("nav.board"), organization_root_path(Current.organization), :board %>
+            <%= tab_link t("nav.agents"), agents_path(Current.organization), :agents, active: section_active?(agents_path(Current.organization)) %>
+            <%= tab_link t("nav.tasks"), my_tasks_path(Current.organization), :tasks, active: section_active?(my_tasks_path(Current.organization)) %>
+            <%= tab_link t("projects.index.title"), projects_path(Current.organization), :file, active: section_active?(projects_path(Current.organization)) %>
+            <%= tab_link t("nav.join"), join_path, :guide %>
+          </div>
+        </nav>
+      <% end %>
+    <% end %>
+  </body>
+</html>

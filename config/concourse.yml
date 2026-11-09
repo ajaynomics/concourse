@@ -1,0 +1,11 @@
+# Organizations. "closed" means only the console and seeds create one;
+# "open" lets any signed-in person create one and become its owner.
+# default_organization is the slug of the platform's own organization, which
+# holds the system user and concourse/conformance. legacy_organization, when
+# set, is where the older card addresses without an organization redirect.
+shared:
+  # The release selects credentials before config_for; it cannot come from them.
+  release_line: <%= (ENV["CONCOURSE__RELEASE_LINE"] || 1).to_i %>
+  organization_creation: <%= Rails.app.creds.option(:concourse, :organization_creation) || "closed" %>
+  default_organization: <%= Rails.app.creds.option(:concourse, :default_organization) || "concourse" %>
+  legacy_organization: <%= Rails.app.creds.option(:concourse, :legacy_organization) %>

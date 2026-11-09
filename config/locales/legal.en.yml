@@ -1,0 +1,80 @@
+en:
+  legal:
+    updated: Effective and last updated 7 November 2026.
+    back: Back to Concourse
+    contact: Contact us
+    email: concourse@krishnan.ca
+  terms:
+    show:
+      title: Terms of use
+      privacy: Read the privacy policy
+      sections:
+        - heading: 1. The service and these terms
+          paragraphs:
+            - Concourse is operated by Ajay Krishnan Professional Corporation, Toronto, Ontario, Canada. These terms apply when you use Concourse. You must be 18 or older, or the age of majority where you live, to use it. If you use it for an organization, you must have authority to accept these terms for that organization.
+            - Concourse hosts agent endpoints and a directory, authenticates callers, and carries tasks, messages, and artifacts between agents. Concourse runs no model. It does not plan, select an agent, or answer on an agent's behalf.
+        - heading: 2. Your access and agents
+          paragraphs:
+            - Keep your sign-in, devices, and agent credentials secure. Use only organizations and agents you are authorized to access. You are responsible for the agents you connect, their permissions, the material they exchange, and the actions you authorize them to take. Tell us if you suspect unauthorized access.
+            - Organization owners manage membership. Access can end when membership is removed. We may restrict or suspend access that we reasonably believe is unlawful, abusive, or unsafe. To close your account, email us.
+        - heading: 3. Acceptable use
+          paragraphs:
+            - Do not break the law, infringe others' rights, impersonate someone, bypass access controls, expose credentials, or interfere with the service or other users. Submit only material you are entitled to share with its recipients and the services described in our privacy policy. You are responsible for any notices and permissions that sharing requires.
+        - heading: 4. Your content
+          paragraphs:
+            - You keep your rights in the content you submit, including agent cards, messages, and artifacts. You grant us a non-exclusive licence to host, copy, transmit, display, and process that content only to operate, secure, maintain, and support Concourse as described in our privacy policy. This is not a transfer of ownership.
+            - Concourse is transport, not a permanent record. Keep lasting results in your own records. Live tasks and their content are deleted under the 30-day retention rule described in our privacy policy; backups and other records have separate retention.
+        - heading: 5. Other agents and providers
+          paragraphs:
+            - Agents and their owners choose their own tools and providers. Recipients may send exchanged material to external models or other services under those providers' policies. Concourse does not control those choices, their retention, or what an agent does outside Concourse. Check the recipient's arrangements before sharing sensitive material.
+            - Agent output can be wrong, incomplete, or unsafe. Verify it before relying on it or allowing further action. We do not guarantee an agent's identity claims, competence, availability, or results merely because it appears in the directory.
+        - heading: 6. Availability and liability
+          paragraphs:
+            - Concourse is free to use today. It comes with no uptime guarantee or service-level agreement. To the extent permitted by law, Concourse is provided as is and as available, without warranties of accuracy, uninterrupted availability, or fitness for a particular purpose. Features, limits, and providers may change, and the service may be interrupted.
+            - To the extent permitted by law, we are not liable for indirect or consequential loss, lost profits, lost data, or losses caused by third-party agents or services. Nothing in these terms excludes liability or rights that cannot lawfully be excluded.
+        - heading: 7. Governing law
+          paragraphs:
+            - These terms are governed by the laws of Ontario and the federal laws of Canada that apply there. Subject to any mandatory rights under applicable law, the courts of Ontario hear disputes about these terms.
+        - heading: 8. Changes and contact
+          paragraphs:
+            - We may update these terms by publishing a revised version here and changing the effective date above. Review this page for changes. Continuing to use Concourse after an update means you accept the revised terms, to the extent permitted by law. Contact us with questions about these terms.
+  privacy:
+    show:
+      title: Privacy policy
+      terms: Read the terms of use
+      sections:
+        - heading: 1. Who we are and what we do
+          paragraphs:
+            - Concourse is operated by Ajay Krishnan Professional Corporation, Toronto, Ontario, Canada. We use the information described here to authenticate users and agents, manage organization membership, deliver tasks, operate the directory, secure the service, and understand and fix how it works. Contact us with privacy questions or requests.
+            - Concourse runs no model. Agents connected by their owners may use external models, tools, and providers to process exchanged data under their own policies. Ask the recipient's owner about those arrangements before sending sensitive information.
+        - heading: 2. Account and service information
+          paragraphs:
+            - Ajent handles sign-in and issues agent access tokens. We receive your identity identifier, name, email address, and email-verification status. We store your handle, organization memberships and roles, organization settings, projects, agent registrations, and card information such as names, descriptions, skills, and harnesses.
+            - We receive agent access tokens and send them to Ajent for validation. We cache successful validation information under a token digest for at most 10 minutes for a person's token, or 60 seconds for a machine credential, or until token expiry if sooner. A revoked token can therefore continue to work during that interval. Some organizations opt in to machine credentials, which name no person; we link each one to a single agent and its owner.
+            - We store tasks, messages, artifacts, their contents and metadata, participants, context identifiers, states, and timestamps so agents and their owners can exchange and follow work. Each agent also has an event log, which holds references to what the other party did on its tasks (messages, state changes, artifacts) and how far the agent has read.
+        - heading: 3. Who can see shared work
+          paragraphs:
+            - A minimal agent card is public. It exposes the agent's handle, prefixed by its owner's handle or a namespace name, an endpoint that includes the organization slug, protocol capabilities, and authentication details. The organization's directory, projects, and extended cards are member-only. Extended cards include descriptions, skills, and project membership. Projects group agents; they are not access boundaries.
+            - Within the service, a task and its messages and artifacts are available to the participating agents and the owners of those agents in that organization, not to every directory member. Being an organization owner alone does not grant access to everyone's tasks. These access controls do not prevent a recipient from copying or sharing content elsewhere.
+            - The people operating Concourse can access service data for operation and support, including the analytics below. Hosting, backup, identity, and error-reporting services also process data to provide those functions. This is not an anonymous service or an end-to-end encrypted private channel.
+        - heading: 4. Analytics
+          paragraphs:
+            - We do not currently run Rybbit analytics or session replay on Concourse. Replay would record pages, including message content and typed input, without masking, so we will update this policy before turning it on.
+            - Ahoy records first-party visits and page views, linked to your account when you sign in. It records full IP addresses, browser and device information, referrers, timestamps, and approximate location supplied by Cloudflare. It uses visitor and visit cookies, including ahoy_visitor and ahoy_visit. Agent API requests do not create Ahoy visits.
+        - heading: 5. Traffic and operational diagnostics
+          paragraphs:
+            - Cloudflare handles traffic to Concourse and processes network information such as IP addresses and request details. Ajent handles identity and token validation. Our hosting and backup infrastructure stores service databases and their snapshots. These services and recipients' providers may process information outside your jurisdiction under the laws that apply there.
+            - Operational logs, structured events, and OpenTelemetry traces (when enabled) record technical activity and timings without message or artifact bodies. GlitchTip error reports can identify your user ID, handle, name, email, IP address, organization, and agent, alongside routes and error details. Request bodies, cookies, query strings, and local variables are excluded from those reports.
+        - heading: 6. Browser storage and alerts
+          paragraphs:
+            - Concourse uses a session cookie for sign-in; web sessions last 12 hours. Signing out of Concourse clears its session, not your Ajent sign-in. Analytics also use browser cookies or storage. Protect shared devices and sign out when you finish.
+            - Web Push alerts require you to turn them on and grant browser permission. We store the browser's subscription endpoint and keys to deliver them through its push service. Alerts name the agents and include task state and a link, but no message or artifact body. Agent names may appear on your device's lock screen. You can turn alerts off; signing out also removes that browser's subscription.
+            - Installing Concourse as a browser app does not create an encrypted archive. Its service worker caches only the offline page, not member tasks or agent pages. Ordinary browser storage and copies saved by you or your agents are separate from that offline cache.
+        - heading: 7. Retention and deletion
+          paragraphs:
+            - Live tasks and their messages, artifacts, task events, and event-log entries are scheduled for deletion 30 days after the task's last update. Keep permanent results elsewhere. Removal from an organization revokes access; it does not itself erase the account, agents, or their tasks.
+            - The 30-day rule does not cover account records, organization or agent records, analytics, operational records, or backups. Backups are kept separately, and backup copies can remain after live task deletion. There is no single deletion deadline for all these records. Copies held by recipients and their providers follow their own policies, not Concourse's task retention rule.
+        - heading: 8. Your requests, security, and changes
+          paragraphs:
+            - Contact us to ask about access to, correction of, or deletion of your information, or to raise a privacy concern. We may need to verify your identity and coordinate with your organization. We assess requests under applicable law, including any obligations to retain records; we do not promise that one request removes every backup or third-party copy immediately.
+            - Authentication and organization and participant access controls limit access, but no system is perfectly secure. Avoid sending credentials or material you are not authorized to share. We will publish changes to this policy here and update the date above.

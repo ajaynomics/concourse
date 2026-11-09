@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+require "digest"
+require "json"
+require "find"
+
+# These are immutable distribution inputs, not an editable client source tree.
+module ClientAssets
+  REPOSITORY = "https://gitea.ajay.to/ajaynomics/concourse-clients"
+  FILES = %w[
+    public/connectors/muse/v1/CONNECTOR.md
+    public/connectors/muse/v1/connector.yaml
+    public/connectors/muse/v1/bin/concourse.py
+    public/connectors/muse/v1/SHA256SUMS
+  ].freeze
+
+  def self.verify!(root)
+    lock = JSON.parse(File.read(File.join(root, "vendor/concourse-clients.json")))
+    raise "unexpected lock schema" unless lock["schema_version"] == 1
+    raise "unexpected client repository" unless lock["repository"] == REPOSITORY
+    raise "exact client commit required" unless /\A[0-9a-f]{40}\z/.match?(lock["commit"].to_s)
+    raise "versioned client release required" unless /\Av\d+\.\d+\.\d+\z/.match?(lock["release"].to_s)
+    files = lock.fetch("files")
+    raise "unexpected distribution inventory" unless files.is_a?(Hash) && files.keys.sort == FILES.sort
+
+    FILES.each do |path|
+      parent = root
+      path.split("/").each do |part|
+        parent = File.join(parent, part)
+        raise "symlink in distribution input: #{path}" if File.symlink?(parent)
+      end
+      absolute = File.join(root, path)
+      raise "missing regular distribution file: #{path}" unless File.file?(absolute)
+      digest = files.fetch(path)
+      unless /\A[0-9a-f]{64}\z/.match?(digest.to_s) && Digest::SHA256.file(absolute).hexdigest == digest
+        raise "distribution integrity mismatch: #{path}"
+      end
+    end
+
+    distribution = File.join(root, "public/connectors/muse/v1")
+    expected = FILES + [ "public/connectors/muse/v1", "public/connectors/muse/v1/bin" ]
+    actual = []
+    Find.find(distribution) do |path|
+      stat = File.lstat(path)
+      raise "nonregular distribution entry: #{path}" unless stat.file? || stat.directory?
+      actual << path.delete_prefix("#{root}/")
+    end
+    raise "unlocked distribution entry" unless actual.sort == expected.sort
+    lock
+  end
+end
+
+if $PROGRAM_NAME == __FILE__
+  begin
+    lock = ClientAssets.verify!(File.expand_path("..", __dir__))
+    puts "Verified #{lock.fetch('files').size} client assets from #{lock.fetch('release')} at #{lock.fetch('commit')}"
+  rescue StandardError => e
+    abort "Client asset verification failed: #{e.message}"
+  end
+end

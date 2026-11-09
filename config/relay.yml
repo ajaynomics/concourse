@@ -1,0 +1,10 @@
+# Settings do not activate this partial binary. Agent's completeness gate is
+# hard unavailable until the reviewed relay/authorization slices are complete.
+shared:
+  enabled: <%= Rails.app.creds.option(:relay, :enabled).to_s == "true" %>
+  outbound_enabled: <%= Rails.app.creds.option(:relay, :outbound_enabled).to_s == "true" %>
+  ajent_token_url: <%= Rails.app.creds.option(:relay, :ajent_token_url).to_json %>
+  ajent_oauth2_metadata_url: <%= Rails.app.creds.option(:relay, :ajent_oauth2_metadata_url).to_json %>
+  relay_client_id: <%= Rails.app.creds.option(:relay, :relay_client_id).to_json %>
+  relay_client_secret: <%= Rails.app.creds.option(:relay, :relay_client_secret).to_json %>
+  allowed_endpoints: <%= (Rails.app.creds.option(:relay, :allowed_endpoints) || []).to_json %>

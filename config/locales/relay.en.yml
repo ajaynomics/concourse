@@ -1,0 +1,11 @@
+en:
+  owner_tasks:
+    relay:
+      route: "Execution route: %{route}"
+      delivery: "Delivery: %{delivery}"
+      observed_at: "Last observed: %{time}"
+      unconfirmed: "Delivery is unconfirmed. No inbox copy or automatic retry will be made. Starting separate new work could duplicate effects."
+      native_executor: "The native agent owns execution. Recipient owners cannot reply or change its state here."
+      stale: "The last observation is stale; this does not mean the native work failed or stopped."
+      gap: "Observation gaps are possible. This record is not a lossless native event history."
+      cancel_pending: "Cancellation is %{state}. This does not prove the work stopped."

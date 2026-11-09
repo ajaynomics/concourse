@@ -1,0 +1,97 @@
+<% host = @connect_request.redirect_host %>
+<% content_for :title, "Connect #{host}" %>
+
+<section class="max-w-2xl space-y-6" aria-labelledby="connect_title">
+  <h1 id="connect_title" class="page-title break-words">Connect an app as your agent</h1>
+  <%# The redirect host is the fact Concourse checked; the app's name is only its own claim. %>
+  <p class="surface p-4 text-[17px] text-ink-50"><strong class="font-mono break-all"><%= host %></strong> will act as this agent.</p>
+  <% if @connect_request.app_name.present? %>
+    <p class="meta">This app calls itself “<%= @connect_request.app_name %>”.</p>
+  <% end %>
+  <p class="page-lead">It gets its own credential. It can find agents in the organization, send them messages and answer its own mail, on your behalf. An owner of the organization can retire it, and the app can disconnect it.</p>
+
+  <% if @failure %>
+    <p role="alert" class="surface p-4"><%= {
+      organization: "Choose one of the organizations listed below.",
+      prefix: "Choose one of the address prefixes listed below.",
+      refused: "The sign-in service would not create a credential for this agent, for example because you have connected too many apps. Nothing was created.",
+      unavailable: "The sign-in service is not answering. Nothing was created. Try again in a minute.",
+      failed: "Concourse could not finish connecting the agent. Nothing was created. Try again."
+    }.fetch(@failure) %></p>
+  <% end %>
+
+  <% if @organizations.empty? %>
+    <div role="status" class="surface space-y-2 p-4">
+      <p>None of your organizations accepts connected apps yet. An owner can turn this on in the organization's settings.</p>
+      <% if @owned_organizations.any? %>
+        <ul>
+          <% @owned_organizations.each do |organization| %>
+            <li><%= link_to "#{organization.name} settings", edit_organization_path(organization), class: "link inline-flex min-h-11 items-center" %></li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  <% else %>
+    <%= form_with url: connect_path, id: "connect_approval", data: { turbo: false, controller: "connect-address" }, class: "space-y-6" do |form| %>
+      <% @connect_request.to_h.except("handle").each do |field, value| %>
+        <%= hidden_field_tag field, value, id: nil %>
+      <% end %>
+
+      <fieldset>
+        <legend class="text-[15px] font-semibold text-ink-50">Organization</legend>
+        <% @organizations.each do |organization| %>
+          <label class="mt-2 flex min-h-11 items-center gap-3">
+            <%= radio_button_tag :organization, organization.slug, organization == @organization, required: true,
+                  data: { connect_address_target: "organization", action: "connect-address#update" } %>
+            <span class="text-[15px] text-ink-100"><%= organization.name %></span>
+          </label>
+        <% end %>
+      </fieldset>
+
+      <div>
+        <%= label_tag :prefix, "Address prefix", class: "text-[15px] font-semibold text-ink-50" %>
+        <%# Blank is the person's own handle. A namespace belongs to one organization. %>
+        <select name="prefix" id="prefix" class="field mt-2" aria-describedby="prefix_hint"
+                data-connect-address-target="prefix" data-action="connect-address#update">
+          <option value="" data-prefix="<%= Current.user.handle %>"><%= Current.user.handle %> (your handle)</option>
+          <% @namespaces.each do |namespace| %>
+            <option value="<%= namespace.name %>" data-prefix="<%= namespace.name %>" data-organization="<%= namespace.organization.slug %>"
+                    <%= "selected" if @agent.namespace == namespace %>><%= namespace.name %> (<%= namespace.organization.name %>)</option>
+          <% end %>
+        </select>
+        <% @agent.errors.full_messages_for(:namespace).each do |message| %>
+          <p role="alert" class="mt-2 text-[15px] text-stop-200"><%= message %></p>
+        <% end %>
+        <p id="prefix_hint" class="meta mt-2">The part before the handle. Your own handle, or a namespace of the chosen organization.</p>
+      </div>
+
+      <div>
+        <%= label_tag :handle, "Agent handle", class: "text-[15px] font-semibold text-ink-50" %>
+        <%= text_field_tag :handle, @agent.handle, required: true, maxlength: 40, autocomplete: "off", spellcheck: false,
+              class: "field mt-2", aria: { describedby: "handle_hint" },
+              data: { connect_address_target: "handle", action: "input->connect-address#update" } %>
+        <% @agent.errors.full_messages_for(:handle).each do |message| %>
+          <p role="alert" class="mt-2 text-[15px] text-stop-200"><%= message %></p>
+        <% end %>
+        <p id="handle_hint" class="meta mt-2">The last part of its address. Lowercase letters, digits and hyphens. It can't change later.</p>
+      </div>
+
+      <p class="text-[15px] text-ink-300">Address:
+        <code id="connect_address" class="font-mono break-all text-ink-50" aria-live="polite" data-connect-address-target="address"><%= @organization.slug %>/<%= @agent.prefix %>/<%= @agent.handle.presence || "…" %></code>
+      </p>
+
+      <% if @organizations.any?(&:approves_members?) %>
+        <p class="text-[15px] text-ink-300">In an organization where owners approve agents, this one waits for an owner before it works.</p>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# One row, far apart: Approve first, Cancel at the other end, so a slip
+      never turns one into the other. %>
+  <div class="flex flex-wrap items-center justify-between gap-x-16 gap-y-6 pt-2">
+    <% if @organizations.any? %>
+      <button type="submit" form="connect_approval" class="btn-primary">Approve</button>
+    <% end %>
+    <%= button_to "Cancel", connect_path, method: :delete, params: @connect_request.to_h, form: { data: { turbo: false }, class: "ml-auto" }, class: "btn-quiet" %>
+  </div>
+</section>

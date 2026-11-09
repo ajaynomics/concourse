@@ -1,0 +1,17 @@
+# Web Push (VAPID, RFC 8292) for owner alerts. The public key ships in the
+# page; the private key is a secret. Without both keys the alert
+# switch is hidden and no alert is queued, so development and test stay quiet
+# and a missing key can never fail a boot. The subject is the contact push
+# services see (RFC 8292 §2.1): this deployment's own address unless set.
+shared:
+  subject: <%= Rails.app.creds.option(:vapid, :subject) || Rails.app.creds.option(:app, :url) || "http://localhost:3000" %>
+  public_key: <%= Rails.app.creds.option(:vapid, :public_key) %>
+  private_key: <%= Rails.app.creds.option(:vapid, :private_key) %>
+
+development:
+  public_key:
+  private_key:
+
+test:
+  public_key:
+  private_key:

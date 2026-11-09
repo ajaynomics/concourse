@@ -1,0 +1,79 @@
+<% content_for :title, t(".title") %>
+
+<section data-controller="filter">
+  <header class="max-w-3xl">
+    <% if @project %>
+      <h1 class="page-title"><%= t(".headline_project", count: @agents.size, name: @project.name) %></h1>
+      <p class="page-lead"><%= @project.description.presence || t(".lead_project") %></p>
+    <% else %>
+      <h1 class="page-title"><%= t(".headline", count: @agents.size) %></h1>
+      <p class="page-lead"><%= t(".lead") %></p>
+    <% end %>
+  </header>
+
+  <% if @pending_agents.any? %>
+    <section aria-labelledby="waiting_title" class="mt-8 max-w-3xl">
+      <h2 id="waiting_title" class="section-title"><%= t(".waiting") %> <span class="count"><%= @pending_agents.size %></span></h2>
+      <p class="meta mt-0.5 mb-3"><%= t(".waiting_hint") %></p>
+      <ul class="rows">
+        <% @pending_agents.each do |agent| %>
+          <% label = agent.qualified_handle || t(".agent_of", owner: agent.owner) %>
+          <li id="<%= dom_id(agent, :pending) %>" class="flex min-h-14 items-center gap-3 py-2">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-[15px] font-semibold text-ink-50"><%= label %></p>
+              <p class="meta truncate"><%= t(".owned_by", owner: agent.owner) %></p>
+            </div>
+            <%= button_to t(".approve"), pending_agent_approval_path(Current.organization, agent), form_class: "contents",
+                  class: "btn-primary min-h-11 text-[14px]", aria: { label: t(".approve_label", name: label) } %>
+            <%= button_to t(".decline"), pending_agent_path(Current.organization, agent), method: :delete, form_class: "contents",
+                  class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".decline_label", name: label) } %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <%# Projects narrow the directory on the server, so a project is a link to
+      share. The search below narrows whatever is shown. %>
+  <nav class="-mx-4 mt-6 flex gap-6 overflow-x-auto border-b border-edge/[0.09] px-4 [scrollbar-width:none] sm:mx-0 sm:px-0" aria-label="<%= t(".projects") %>">
+    <%= link_to t(".all"), agents_path(Current.organization), class: "filter", aria: { current: ("page" unless @project) } %>
+    <% @projects.each do |project| %>
+      <%= link_to project.name, agents_path(Current.organization, project: project.slug), class: "filter", aria: { current: ("page" if project == @project) } %>
+    <% end %>
+    <%= link_to projects_path(Current.organization), class: "filter ml-auto" do %><%= @projects.any? ? t(".manage_projects") : t(".new_project") %><% end %>
+  </nav>
+
+  <%# Filters what is already on the page. The directory is small enough
+      that a server round trip per keystroke would only add latency. %>
+  <label class="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 mt-8 block bg-ink-900 px-4 py-3 sm:static sm:mx-0 sm:max-w-md sm:p-0">
+    <span class="sr-only"><%= t(".search") %></span>
+    <span class="relative block">
+      <%= icon(:search, css: "pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-ink-400") %>
+      <input type="search" autocomplete="off" spellcheck="false" enterkeyhint="search"
+             placeholder="<%= t(".search") %>"
+             data-filter-target="input" data-action="input->filter#apply keydown.esc->filter#clear"
+             class="field rounded-full pl-11">
+    </span>
+  </label>
+
+  <ul class="rows mt-6 sm:grid sm:grid-cols-2 sm:gap-x-10 sm:divide-y-0 sm:border-y-0 sm:[&>li]:border-b sm:[&>li]:border-edge/[0.09] sm:[&>li:nth-child(-n+2)]:border-t">
+    <% @agents.each do |agent| %>
+      <li data-filter-target="cell" class="flex items-center gap-2">
+        <div class="min-w-0 flex-1"><%= render "agents/tile", agent: agent %></div>
+        <%# One click for owners; the retirement page still shows the outcome. %>
+        <% if Current.organization_owner? && !agent.owner.system? %>
+          <%= button_to t(".retire"), retirement_path(Current.organization, agent.prefix, agent.handle),
+                params: { retirement: { agent_id: agent.id, confirmation: agent.qualified_handle, admitted_at: agent.admitted_at&.iso8601(6) } },
+                form: { class: "shrink-0", data: { turbo_confirm: t(".retire_confirm", name: agent.qualified_handle) } },
+                class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".retire_label", name: agent.qualified_handle) } %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+
+  <p hidden data-filter-target="empty" role="status" aria-live="polite" class="py-6 text-[15px] text-ink-400"><%= t(".no_match") %></p>
+  <% if @agents.empty? %>
+    <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= @project ? t(".empty_project") : t(".empty") %></p>
+    <%= link_to t(@project ? ".browse_all" : ".connect"), @project ? agents_path(Current.organization) : join_path, class: "btn-ghost mt-4" %>
+  <% end %>
+</section>

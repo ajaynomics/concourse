@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Production (Kamal) listens on :80 for the shared kamal-proxy. Development
+# uses PORT or 3000. HTTP, not Falcon's default TLS: TLS ends before Falcon, at
+# Cloudflare and kamal-proxy.
+bind="${FALCON_BIND:-http://0.0.0.0:${PORT:-3000}}"
+count="${FALCON_COUNT:-1}"
+
+exec bundle exec falcon serve --bind "$bind" --count "$count" "$@"

@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+# One job running `bin/ci`, the whole checklist: style, audits, brakeman with
+# --exit-on-warn, the Rails and system suites, the production boot, seeds, the
+# A2A TCK. A check added to bin/ci runs here without
+# touching this file, so the two cannot drift apart.
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      # The A2A TCK is a Python project; bin/a2a-tck runs it with `uv sync`.
+      # A pinned version: resolving "latest" calls GitHub's API without a
+      # token from Gitea's runner, which shares a rate limit and fails the run.
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.5"
+
+      # What headless Chrome links against; the runner image lacks it.
+      - name: Install packages
+        run: sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libpangocairo-1.0-0 libcairo2 fonts-liberation
+
+      # System tests drive headless Chrome; ApplicationSystemTestCase reads
+      # CHROME_BIN. selenium-manager, vendored in selenium-webdriver, resolves
+      # Chrome and the chromedriver that matches it: setup-chrome paired a new
+      # Chrome with a stale cached driver on this runner.
+      - name: Prepare browser driver
+        run: |
+          set -euo pipefail
+          cache_path="$PWD/tmp/selenium"
+          gem_dir="$(bundle show selenium-webdriver)"
+          case "$(uname -m)" in
+            x86_64)        selenium_arch_dir="linux-x86_64" ;;
+            aarch64|arm64) selenium_arch_dir="linux-arm64" ;;
+            *)             selenium_arch_dir="linux" ;;
+          esac
+          selenium_manager="$gem_dir/bin/$selenium_arch_dir/selenium-manager"
+          if [ ! -x "$selenium_manager" ]; then
+            selenium_manager="$gem_dir/bin/linux/selenium-manager"
+          fi
+          test -x "$selenium_manager"
+          # Keep the resolver's diagnostics when set -e would hide captured stdout.
+          result=$(SE_CACHE_PATH="$cache_path" "$selenium_manager" \
+            --browser chrome \
+            --language-binding ruby \
+            --output json) || {
+              status=$?
+              printf '%s\n' "$result" >&2
+              exit "$status"
+            }
+          chrome_bin=$(printf '%s' "$result" | ruby -rjson -e 'puts JSON.parse($stdin.read).fetch("result").fetch("browser_path")')
+          test -x "$chrome_bin"
+          printf 'SE_CACHE_PATH=%s\n' "$cache_path" >> "$GITHUB_ENV"
+          printf 'CHROME_BIN=%s\n' "$chrome_bin" >> "$GITHUB_ENV"
+          # Set only now: the resolution above is the one network call.
+          printf 'SE_OFFLINE=true\n' >> "$GITHUB_ENV"
+
+      - name: Prepare RuboCop cache
+        uses: actions/cache@v6
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
+        with:
+          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
+
+      - name: Run bin/ci
+        run: bin/ci
+
+      - name: Keep screenshots from failed system tests
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: screenshots
+          path: ${{ github.workspace }}/tmp/screenshots
+          if-no-files-found: ignore

@@ -1,0 +1,29 @@
+<% content_for :title, t(".title") %>
+
+<div class="mx-auto max-w-2xl">
+  <% unless signed_in? %>
+    <nav class="mb-8" aria-label="Concourse">
+      <%= link_to root_path, class: "link inline-flex min-h-11 items-center gap-3 font-semibold" do %>
+        <%= brand_mark(css: "h-5 w-8") %>
+        <%= t("legal.back") %>
+      <% end %>
+    </nav>
+  <% end %>
+
+  <article class="prose-concourse" aria-labelledby="legal-title">
+    <h1 id="legal-title"><%= t(".title") %></h1>
+    <p class="meta"><%= t("legal.updated") %></p>
+    <p><%= link_to t(".terms"), terms_path %></p>
+
+    <% t(".sections").each do |section| %>
+      <section>
+        <h2><%= section[:heading] %></h2>
+        <% section[:paragraphs].each do |paragraph| %>
+          <p><%= paragraph %></p>
+        <% end %>
+      </section>
+    <% end %>
+
+    <p><%= t("legal.contact") %>: <%= mail_to t("legal.email") %></p>
+  </article>
+</div>

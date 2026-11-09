@@ -1,0 +1,73 @@
+<% content_for :title, t(".title") %>
+
+<%# One sentence states the situation; the list under it is the work. %>
+<header class="max-w-3xl">
+  <h1 class="page-title"><%= t(".headline", count: @waiting.size) %></h1>
+  <p class="page-lead">
+    <% if (oldest = @waiting.first) %>
+      <%= t(".oldest", time: waited(oldest.actionable_since || oldest.status_at)) %>
+    <% else %>
+      <%= t(".lead") %>
+    <% end %>
+  </p>
+  <p class="sr-only"><%= t(".greeting", user: Current.user) %></p>
+</header>
+
+<div class="mt-10 grid gap-x-14 gap-y-12 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <div class="min-w-0 space-y-12">
+    <section aria-labelledby="awaiting_title">
+      <h2 id="awaiting_title" class="section-title mb-3"><%= t(".awaiting.title") %> <span class="count"><%= @waiting.size %></span></h2>
+      <%= render "tasks/board", tasks: @waiting, waiting: true, empty: t(".awaiting.empty") %>
+    </section>
+
+    <div class="grid gap-12 xl:grid-cols-2 xl:gap-10">
+      <section aria-labelledby="moving_title" class="min-w-0">
+        <h2 id="moving_title" class="section-title mb-3"><%= t(".moving.title") %> <span class="count"><%= @moving.size %></span></h2>
+        <%= render "tasks/board", tasks: @moving, empty: t(".moving.empty") %>
+      </section>
+      <section aria-labelledby="settled_title" class="min-w-0">
+        <div class="mb-3 flex items-baseline justify-between gap-3">
+          <h2 id="settled_title" class="section-title"><%= t(".settled.title") %></h2>
+          <%= link_to t(".all_tasks"), my_tasks_path(Current.organization), class: "link inline-flex min-h-11 items-center text-[13px]" %>
+        </div>
+        <%= render "tasks/board", tasks: @settled, empty: t(".settled.empty") %>
+      </section>
+    </div>
+  </div>
+
+  <aside aria-labelledby="agents_title" class="min-w-0">
+    <div class="mb-3 flex items-baseline justify-between gap-3">
+      <h2 id="agents_title" class="section-title"><%= t(".agents.title") %></h2>
+      <% if Current.organization_owner? %>
+        <%= link_to t(".mail_health"), mail_health_path(Current.organization), class: "link inline-flex min-h-11 items-center text-[13px]" %>
+      <% end %>
+    </div>
+    <% if @agents.any? %>
+      <ul class="rows">
+        <% @agents.each do |agent| %>
+          <% waiting = @agent_waiting[agent] %>
+          <li>
+            <% body = capture do %>
+              <p class="text-[16px]"><%= agent_handle(agent, link: false, mine: true) %></p>
+              <p class="row-meta">
+                <span><%= agent.last_seen_at ? t(".agents.last_call", time: waited(agent.last_seen_at)) : t(".agents.never") %></span>
+                <% if waiting.any? %>
+                  <span class="font-semibold text-sky-400"><%= t(".agents.waiting", count: waiting.size, time: waited(waiting.first.actionable_since)) %></span>
+                <% end %>
+              </p>
+            <% end %>
+            <% if agent.unnamed? %>
+              <div class="row"><%= body %><p class="meta mt-1"><%= t(".agents.unnamed_hint") %></p></div>
+              <%= link_to t("nav.join"), join_path, class: "btn-quiet min-h-11 text-[13px]" %>
+            <% else %>
+              <%= link_to body, agent_path(Current.organization, agent.prefix, agent.handle), class: "row" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= t(".agents.empty") %></p>
+      <%= link_to join_path, class: "btn-primary mt-4" do %><%= t(".agents.connect") %> <%= icon(:arrow, css: "size-4") %><% end %>
+    <% end %>
+  </aside>
+</div>

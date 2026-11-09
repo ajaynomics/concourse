@@ -1,0 +1,43 @@
+<% content_for :title, t(".title") %>
+
+<header class="max-w-3xl">
+  <h1 class="page-title"><%= t(".title") %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+</header>
+
+<%# The filter swaps this frame only and advances the URL, so a filtered
+    board is a link you can share and the back button walks the filters. %>
+<%= turbo_frame_tag "tasks_board", data: { turbo_action: "advance" }, class: "mt-8 block" do %>
+  <nav class="-mx-4 mb-4 flex gap-6 overflow-x-auto border-b border-edge/[0.09] px-4 [scrollbar-width:none] sm:mx-0 sm:px-0" aria-label="<%= t(".filters") %>">
+    <% %w[needs_you open done all].each do |key| %>
+      <%= task_filter_link(key, @filter, @counts[key]) %>
+    <% end %>
+  </nav>
+
+  <% if @filter == "needs_you" %>
+    <%= render "tasks/board", tasks: @rows, waiting: true, empty: t(".empty.#{@filter}") %>
+  <% else %>
+    <%= render "tasks/threads", contexts: @rows, empty: t(".empty.#{@filter}") %>
+  <% end %>
+  <% if @rows.empty? %>
+    <%= link_to t(@filter == "all" ? ".browse_agents" : ".view_all"), @filter == "all" ? agents_path(Current.organization) : my_tasks_path(Current.organization), class: "btn-ghost mt-4", data: { turbo_frame: "_top" } %>
+  <% end %>
+
+  <% if @page > 1 || @older %>
+    <nav class="mt-5 flex items-center justify-between gap-3" aria-label="<%= t(".pages") %>">
+      <% if @page > 1 %>
+        <%= link_to my_tasks_path(Current.organization, filter: (@filter unless @filter == "all"), page: (@page - 1 unless @page == 2)), class: "btn-ghost min-h-11 text-sm", rel: "prev" do %>
+          <%= icon(:back, css: "size-4") %> <%= t(".newer") %>
+        <% end %>
+      <% else %><span></span><% end %>
+      <span class="meta tabular-nums"><%= t(".page", page: @page) %></span>
+      <% if @older %>
+        <%= link_to my_tasks_path(Current.organization, filter: (@filter unless @filter == "all"), page: @page + 1), class: "btn-ghost min-h-11 text-sm", rel: "next" do %>
+          <%= t(".older") %> <%= icon(:arrow, css: "size-4") %>
+        <% end %>
+      <% else %><span></span><% end %>
+    </nav>
+  <% end %>
+<% end %>
+
+<p class="meta mt-8 max-w-3xl"><%= t(".retention") %></p>

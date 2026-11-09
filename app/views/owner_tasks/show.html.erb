@@ -1,0 +1,91 @@
+<% content_for :title, t(".title", id: short_id(@task.id)) %>
+<% move = @task.awaiting?(Current.user) %>
+
+<%= link_to my_tasks_path(Current.organization), class: "btn-quiet -ml-3 min-h-9 text-[13px]" do %><%= icon(:back, css: "size-4") %> <%= t(".back") %><% end %>
+
+<div>
+  <header class="mt-4 max-w-3xl">
+    <h1 class="page-title"><%= task_headline(@task) %></h1>
+
+    <div class="mt-3 flex items-center gap-3 text-[15px]">
+      <%= agent_handle(@task.caller_agent, mine: mine?(@task.caller_agent), css: "min-w-0 truncate py-3") %>
+      <%= lifeline(@task, css: "h-5 w-24 sm:w-40", move: move) %>
+      <%= agent_handle(@task.recipient_agent, mine: mine?(@task.recipient_agent), css: "min-w-0 truncate py-3") %>
+    </div>
+
+    <p class="mt-3 text-[15px] text-ink-300">
+      <%= state_badge(@task, move: move) %>. <%= state_sentence(@task) %>
+      <span class="text-ink-400"><%= t(".since", time: waited(@task.status_at)) %></span>
+    </p>
+    <% if move %>
+      <a href="#respond" data-turbo="false" class="mt-4 inline-flex min-h-11 items-center gap-2 text-[15px] font-semibold text-sky-400">
+        <%= t(".your_move") %> <%= icon(:arrow, css: "size-4 rotate-90") %>
+      </a>
+    <% end %>
+
+    <%= render "owner_tasks/relay", task: @task %>
+
+    <details class="group mt-5 text-[13px] text-ink-400">
+      <summary class="inline-flex min-h-9 cursor-pointer list-none items-center gap-1.5 font-semibold text-ink-300 hover:text-ink-50 [&::-webkit-details-marker]:hidden">
+        <%= t(".details") %> <span class="transition group-open:rotate-90" aria-hidden="true">›</span>
+      </summary>
+      <dl class="mt-2 grid max-w-xl grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-1.5">
+        <dt><%= t(".created") %></dt><dd class="text-ink-200"><%= l(@task.created_at, format: :long) %></dd>
+        <dt><%= t(".status_at") %></dt><dd class="text-ink-200"><%= l(@task.status_at, format: :long) %></dd>
+        <dt><%= t("tasks.columns.id") %></dt><dd class="truncate font-mono text-ink-200"><%= @task.id %></dd>
+        <dt><%= t(".context") %></dt><dd class="truncate font-mono text-ink-200"><%= @task.context_id %></dd>
+      </dl>
+    </details>
+  </header>
+
+  <section aria-labelledby="messages_title" class="mt-12 max-w-4xl">
+    <h2 id="messages_title" class="section-title mb-3"><%= t(".messages") %> <span class="count"><%= @message_count %></span></h2>
+    <div class="mb-4 flex items-baseline justify-between gap-3 text-[13px] font-semibold" aria-hidden="true">
+      <span class="text-ink-50"><%= t(".caller_line") %></span>
+      <span class="text-ink-50"><%= t(".recipient_line") %></span>
+    </div>
+
+    <% if @turns.any? %>
+      <ol class="thread">
+        <% @turns.each do |turn| %>
+          <% if turn.is_a?(Message) %>
+            <% side = turn.role == "ROLE_USER" ? "caller" : "recipient" %>
+            <li id="<%= dom_id(turn) %>" class="turn" data-side="<%= side %>" <%= "data-status" if turn.message_id == @task.status_message_id %>>
+              <p class="turn-head">
+                <%= agent_handle(turn.sender_agent, link: false, mine: mine?(turn.sender_agent)) %>
+                <%= board_time(turn.created_at) %>
+                <% if turn.metadata.to_h["concourse.via"] == Task::OwnerActions::VIA %><span><%= t(".by_person") %></span><% end %>
+                <% if turn.message_id == @task.status_message_id %><span><%= t(".current_status") %></span><% end %>
+              </p>
+              <div class="turn-body"><% Array(turn.parts).each do |part| %><%= render_part(part) %><% end %></div>
+            </li>
+          <% else %>
+            <li id="artifact_<%= turn.artifact_id %>" class="turn" data-side="recipient" data-kind="artifact">
+              <p class="turn-head"><%= t(".artifact") %> <%= board_time(turn.created_at) %></p>
+              <div class="surface mt-1.5 p-4">
+                <p class="flex items-center gap-2 text-[15px] font-semibold text-ink-50">
+                  <%= icon(:file, css: "size-4 text-ink-400") %> <%= turn.name.presence || short_id(turn.artifact_id) %>
+                </p>
+                <% if turn.description.present? %><p class="mt-1 text-[15px] text-ink-300"><%= turn.description %></p><% end %>
+                <div class="mt-3 text-[15px] text-ink-100"><% Array(turn.parts).each do |part| %><%= render_part(part) %><% end %></div>
+              </div>
+            </li>
+          <% end %>
+        <% end %>
+      </ol>
+    <% else %>
+      <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= t(".messages_empty") %></p>
+    <% end %>
+
+    <%= render "owner_tasks/respond", task: @task %>
+  </section>
+</div>
+
+<% unless @context.single? %>
+  <section aria-labelledby="thread_title" class="mt-16 max-w-4xl">
+    <h2 id="thread_title" class="section-title mb-3"><%= t(".thread") %> <span class="count"><%= @context.tasks.size %></span></h2>
+    <%= render "tasks/tree", context: @context, css: "rows", current: @task %>
+  </section>
+<% end %>
+
+<p class="meta mt-8 max-w-4xl"><%= t("owner_tasks.index.retention") %></p>

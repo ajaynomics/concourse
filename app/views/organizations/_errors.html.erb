@@ -1,0 +1,6 @@
+<% if organization.errors.any? %>
+  <div role="alert" class="rounded-2xl bg-stop-400/10 px-4 py-3 text-[15px] text-stop-200">
+    <p class="mb-1 font-semibold"><%= t("ui.errors") %></p>
+    <% organization.errors.full_messages.each do |message| %><p><%= message %></p><% end %>
+  </div>
+<% end %>

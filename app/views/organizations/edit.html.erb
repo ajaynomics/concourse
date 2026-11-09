@@ -1,0 +1,183 @@
+<% content_for :title, t(".title", name: @organization.name_was) %>
+
+<section class="max-w-2xl">
+  <h1 class="page-title wrap-break-word"><%= t(".title", name: @organization.name_was) %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+
+  <%= form_with model: @organization, url: organization_path(@organization), method: :patch, class: "mt-8 space-y-6" do |form| %>
+    <%= render "errors", organization: @organization %>
+    <div>
+      <%= form.label :name, t(".name"), class: "text-[15px] font-semibold text-ink-50" %>
+      <%= form.text_field :name, maxlength: 120, autocomplete: "organization", required: true, class: "field mt-2" %>
+    </div>
+    <div>
+      <%= form.label :email_domains, t(".email_domains"), class: "text-[15px] font-semibold text-ink-50" %>
+      <p id="email_domains_hint" class="meta mt-0.5"><%= t(".email_domains_hint") %></p>
+      <%= form.text_area :email_domains, rows: 3, autocapitalize: "off", spellcheck: false,
+            aria: { describedby: "email_domains_hint" }, class: "field mt-2 font-mono" %>
+    </div>
+    <fieldset>
+      <legend class="text-[15px] font-semibold text-ink-50"><%= t(".admission") %></legend>
+      <% Organization::ADMISSIONS.each do |admission| %>
+        <label class="mt-2 flex min-h-11 items-start gap-3">
+          <%= form.radio_button :admission, admission, class: "mt-0.5 size-6 shrink-0" %>
+          <span><span class="text-[15px] text-ink-50"><%= t(".admissions.#{admission}.label") %></span>
+            <span class="meta block"><%= t(".admissions.#{admission}.hint") %></span></span>
+        </label>
+      <% end %>
+    </fieldset>
+    <% unless @organization.legacy? %>
+      <div>
+        <%= form.label :machine_clients, class: "flex min-h-11 items-start gap-3" do %>
+          <%= form.check_box :machine_clients, aria: { describedby: "machine_clients_hint" }, class: "mt-0.5 size-6 shrink-0 accent-ink-50" %>
+          <span><span class="text-[15px] font-semibold text-ink-50"><%= t(".machine_clients") %></span>
+            <span id="machine_clients_hint" class="meta block"><%= t(".machine_clients_hint") %></span></span>
+        <% end %>
+      </div>
+    <% end %>
+    <div>
+      <%= form.label :guide_note, t(".guide_note"), class: "text-[15px] font-semibold text-ink-50" %>
+      <p id="guide_note_hint" class="meta mt-0.5"><%= t(".guide_note_hint") %></p>
+      <%= form.text_area :guide_note, rows: 8, maxlength: Organization::GUIDE_NOTE_LIMIT,
+            aria: { describedby: "guide_note_hint" }, class: "field mt-2 font-mono" %>
+    </div>
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <%= link_to t(".cancel"), organization_root_path(Current.organization), class: "btn-quiet" %>
+      <%= form.button t(".save"), type: "submit", class: "btn-primary" %>
+    </div>
+  <% end %>
+</section>
+
+<% if @join_requests.any? || @pending_agents.any? %>
+  <section aria-labelledby="waiting_title" class="mt-12 max-w-2xl">
+    <h2 id="waiting_title" class="section-title mb-3"><%= t(".waiting") %> <span class="count"><%= @join_requests.size + @pending_agents.size %></span></h2>
+    <ul class="rows">
+      <% @join_requests.each do |join_request| %>
+        <li id="<%= dom_id(join_request) %>" class="flex min-h-14 items-center gap-3 py-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[15px] font-semibold text-ink-50"><%= join_request.user %></p>
+            <p class="meta truncate"><%= t(".wants_to_join", email: join_request.user.email) %></p>
+          </div>
+          <%= button_to t(".approve"), join_request_approval_path(Current.organization, join_request), form_class: "contents",
+                class: "btn-primary min-h-11 text-[14px]", aria: { label: t(".approve_label", name: join_request.user) } %>
+          <%= button_to t(".decline"), join_request_path(Current.organization, join_request), method: :delete, form_class: "contents",
+                class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".decline_label", name: join_request.user) } %>
+        </li>
+      <% end %>
+      <% @pending_agents.each do |agent| %>
+        <li id="<%= dom_id(agent, :pending) %>" class="flex min-h-14 items-center gap-3 py-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[15px] font-semibold text-ink-50"><%= agent.qualified_handle || t(".agent_of", owner: agent.owner) %></p>
+            <p class="meta truncate font-mono"><%= t(".agent_client", client: agent.oauth_client_id) %></p>
+          </div>
+          <%= button_to t(".approve"), pending_agent_approval_path(Current.organization, agent), form_class: "contents",
+                class: "btn-primary min-h-11 text-[14px]", aria: { label: t(".approve_label", name: agent.qualified_handle || t(".agent_of", owner: agent.owner)) } %>
+          <%= button_to t(".decline"), pending_agent_path(Current.organization, agent), method: :delete, form_class: "contents",
+                class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".decline_label", name: agent.qualified_handle || t(".agent_of", owner: agent.owner)) } %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<% if @declined_agents.any? %>
+  <section aria-labelledby="declined_agents_title" class="mt-12 max-w-2xl">
+    <h2 id="declined_agents_title" class="section-title"><%= t(".declined_agents") %> <span class="count"><%= @declined_agents.size %></span></h2>
+    <p class="meta mt-0.5 mb-3"><%= t(".declined_agents_hint") %></p>
+    <ul class="rows">
+      <% @declined_agents.each do |agent| %>
+        <li id="<%= dom_id(agent, :declined) %>" class="flex min-h-14 items-center gap-3 py-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[15px] font-semibold text-ink-50"><%= agent.qualified_handle || t(".agent_of", owner: agent.owner) %></p>
+            <p class="meta truncate font-mono"><%= t(".agent_client", client: agent.oauth_client_id) %></p>
+          </div>
+          <%= button_to t(".approve"), pending_agent_approval_path(Current.organization, agent), form_class: "contents",
+                class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".approve_label", name: agent.qualified_handle || t(".agent_of", owner: agent.owner)) } %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section aria-labelledby="members_title" class="mt-12 max-w-2xl">
+  <h2 id="members_title" class="section-title mb-3"><%= t(".members") %> <span class="count"><%= @memberships.size %></span></h2>
+  <ul class="rows">
+    <% @memberships.each do |membership| %>
+      <li class="flex min-h-14 items-center gap-3 py-2">
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[15px] font-semibold text-ink-50"><%= membership.user %></p>
+          <p class="meta truncate"><%= [ membership.user.handle, t(".roles.#{membership.role}") ].join(" · ") %></p>
+        </div>
+        <% unless membership.last_owner? || membership.user.system? %>
+          <%= button_to membership_path(Current.organization, membership), method: :delete, form_class: "contents",
+                form: { data: { turbo_confirm: t(".remove_confirm", user: membership.user) } },
+                class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".remove_label", user: membership.user) } do %>
+            <%= t(".remove") %>
+          <% end %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<section aria-labelledby="invitations_title" class="mt-12 max-w-2xl">
+  <h2 id="invitations_title" class="section-title"><%= t(".invitations") %> <span class="count"><%= @invitations.size %></span></h2>
+  <p class="meta mt-0.5 mb-3"><%= t(".invitations_hint") %></p>
+  <ul class="rows">
+    <% @invitations.each do |invitation| %>
+      <li class="flex min-h-14 items-center gap-3 py-2">
+        <p class="min-w-0 flex-1 truncate text-[15px] text-ink-50"><%= invitation.email %></p>
+        <%= button_to t(".withdraw"), invitation_path(Current.organization, invitation), method: :delete, form_class: "contents",
+              class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".withdraw_label", email: invitation.email) } %>
+      </li>
+    <% end %>
+  </ul>
+  <%= form_with model: Invitation.new, url: invitations_path(Current.organization), class: "mt-3 flex flex-wrap items-end gap-3" do |form| %>
+    <div class="min-w-0 flex-1">
+      <%= form.label :email, t(".invite_email"), class: "text-[15px] font-semibold text-ink-50" %>
+      <%= form.email_field :email, maxlength: 254, autocomplete: "off", required: true, class: "field mt-2" %>
+    </div>
+    <%= form.button t(".invite"), type: "submit", class: "btn-primary" %>
+  <% end %>
+</section>
+
+<section aria-labelledby="namespaces_title" class="mt-12 max-w-2xl">
+  <h2 id="namespaces_title" class="section-title"><%= t(".namespaces") %> <span class="count"><%= @namespaces.size %></span></h2>
+  <p class="meta mt-0.5 mb-3"><%= t(".namespaces_hint") %></p>
+  <ul class="rows">
+    <% @namespaces.each do |namespace| %>
+      <li class="flex min-h-14 items-center gap-3 py-2">
+        <p class="min-w-0 flex-1 truncate font-mono text-[15px] text-ink-50"><%= namespace.name %>/</p>
+        <%= button_to t(".release"), namespace_path(Current.organization, namespace), method: :delete, form_class: "contents",
+              class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".release_label", name: namespace.name) } %>
+      </li>
+    <% end %>
+  </ul>
+  <%= form_with model: Namespace.new, url: namespaces_path(Current.organization), class: "mt-3 flex flex-wrap items-end gap-3" do |form| %>
+    <div class="min-w-0 flex-1">
+      <%= form.label :name, t(".namespace_name"), class: "text-[15px] font-semibold text-ink-50" %>
+      <%= form.text_field :name, maxlength: 40, autocapitalize: "off", spellcheck: false, required: true,
+            pattern: "[a-z0-9]([a-z0-9-]*[a-z0-9])?", class: "field mt-2 font-mono" %>
+    </div>
+    <%= form.button t(".claim"), type: "submit", class: "btn-primary" %>
+  <% end %>
+</section>
+
+<% if @removals.any? %>
+  <section aria-labelledby="removed_title" class="mt-12 max-w-2xl">
+    <h2 id="removed_title" class="section-title"><%= t(".removed_title") %> <span class="count"><%= @removals.size %></span></h2>
+    <p class="meta mt-0.5 mb-3"><%= t(".removed_hint") %></p>
+    <ul class="rows">
+      <% @removals.each do |removal| %>
+        <li class="flex min-h-14 items-center gap-3 py-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[15px] font-semibold text-ink-50"><%= removal.user %></p>
+            <p class="meta truncate"><%= removal.user.handle %></p>
+          </div>
+          <%= button_to t(".readmit"), removal_path(Current.organization, removal), method: :delete, form_class: "contents",
+                class: "btn-quiet min-h-11 text-[14px]", aria: { label: t(".readmit_label", user: removal.user) } %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

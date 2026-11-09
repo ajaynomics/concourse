@@ -1,0 +1,65 @@
+<% content_for :title, t(".title", handle: @agent.qualified_handle) %>
+
+<%= link_to agent_path(Current.organization, @agent.prefix, @agent.handle), class: "btn-quiet -ml-3 min-h-9 text-[13px]" do %><%= icon(:back, css: "size-4") %> <%= @agent.qualified_handle %><% end %>
+
+<section class="mt-4 max-w-2xl">
+  <h1 class="page-title break-all [&_.handle]:whitespace-normal" style="view-transition-name: <%= agent_transition_name(@agent) %>">
+    <%= agent_handle(@agent, link: false, mine: true) %>
+  </h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+
+  <%= form_with model: @agent, url: agent_path(Current.organization, @agent.prefix, @agent.handle), method: :patch, class: "mt-8 space-y-6" do |form| %>
+    <% if @agent.errors.any? %>
+      <div role="alert" class="rounded-2xl bg-stop-400/10 px-4 py-3 text-[15px] text-stop-200">
+        <p class="mb-1 font-semibold"><%= t("ui.errors") %></p>
+        <% @agent.errors.full_messages.each do |message| %><p><%= message %></p><% end %>
+      </div>
+    <% end %>
+    <div>
+      <%= form.label :name, t(".name"), class: "text-[15px] font-semibold text-ink-50" %>
+      <%= form.text_field :name, maxlength: 120, autocomplete: "off", class: "field mt-2" %>
+    </div>
+    <div>
+      <%= form.label :description, t(".description"), class: "text-[15px] font-semibold text-ink-50" %>
+      <p id="description_hint" class="meta mt-0.5"><%= t(".description_hint") %></p>
+      <%= form.text_area :description, rows: 5, maxlength: 4000, aria: { describedby: "description_hint" }, class: "field mt-2 leading-relaxed" %>
+    </div>
+    <% projects = Current.organization.projects.order(:name) %>
+    <% if projects.any? %>
+      <fieldset>
+        <legend class="text-[15px] font-semibold text-ink-50"><%= t(".projects") %></legend>
+        <p id="projects_hint" class="meta mt-0.5"><%= t(".projects_hint") %></p>
+        <div class="mt-2 space-y-1" aria-describedby="projects_hint">
+          <%= form.collection_check_boxes :project_slugs, projects, :slug, :name do |box| %>
+            <%= box.label class: "flex min-h-11 items-center gap-3 text-[16px] text-ink-100" do %>
+              <%= box.check_box class: "size-6 accent-ink-50" %> <%= box.text %>
+            <% end %>
+          <% end %>
+        </div>
+      </fieldset>
+    <% end %>
+    <% namespaces = Current.organization.namespaces.order(:name) %>
+    <% if namespaces.any? %>
+      <div>
+        <%= form.label :namespace_id, t(".namespace"), class: "text-[15px] font-semibold text-ink-50" %>
+        <p id="namespace_hint" class="meta mt-0.5"><%= t(".namespace_hint") %></p>
+        <%= form.select :namespace_id, namespaces.map { |namespace| [ namespace.name, namespace.id ] },
+              { include_blank: t(".namespace_none", handle: @agent.owner.handle) },
+              aria: { describedby: "namespace_hint" }, class: "field mt-2" %>
+      </div>
+    <% end %>
+    <% organizations = Current.user.organizations.order(:name) %>
+    <% if organizations.many? %>
+      <div>
+        <%= form.label :organization_id, t(".organization"), class: "text-[15px] font-semibold text-ink-50" %>
+        <p id="organization_hint" class="meta mt-0.5"><%= t(".organization_hint") %></p>
+        <%= form.select :organization_id, organizations.map { |organization| [ organization.name, organization.id ] }, {},
+              aria: { describedby: "organization_hint" }, class: "field mt-2" %>
+      </div>
+    <% end %>
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <%= link_to t(".cancel"), agent_path(Current.organization, @agent.prefix, @agent.handle), class: "btn-quiet" %>
+      <%= form.button t(".save"), type: "submit", class: "btn-primary" %>
+    </div>
+  <% end %>
+</section>

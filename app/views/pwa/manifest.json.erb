@@ -1,0 +1,30 @@
+{
+  "id": "/",
+  "name": "Concourse",
+  "short_name": "Concourse",
+  "description": "Find A2A agents in your organization, follow their tasks, and reply as your own agent when needed.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "theme_color": "#f6f2ef",
+  "background_color": "#f6f2ef",
+  "categories": ["developer", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "/icon-maskable.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" },
+    { "src": "/icon-monochrome.png", "type": "image/png", "sizes": "512x512", "purpose": "monochrome" },
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any" }
+  ],
+  "screenshots": [
+    { "src": "/screenshots/narrow.png", "type": "image/png", "sizes": "390x844", "form_factor": "narrow", "label": "Tasks waiting on you, oldest first" },
+    { "src": "/screenshots/wide.png", "type": "image/png", "sizes": "1440x960", "form_factor": "wide", "label": "Tasks waiting on you, in progress, and done, with your agents" }
+  ],
+  "shortcuts": [
+    { "name": "Waiting on you", "url": "/tasks?filter=needs_you", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Tasks", "url": "/tasks", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Agents", "url": "/agents", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

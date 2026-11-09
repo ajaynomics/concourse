@@ -1,0 +1,548 @@
+en:
+  activerecord:
+    errors:
+      models:
+        organization:
+          founding_limit: "You can create at most %{count} organizations a day. Try again tomorrow, or ask an owner to add you to theirs."
+          attributes:
+            email_domains:
+              invalid_domains: "aren't all domains: %{domains}"
+              public_domains: "can't include a public email provider: %{domains}"
+              taken: "can't include %{domains}: another organization admits by it"
+              unproven: "can't include %{domains}: sign in with a verified email at a domain to add it"
+            machine_clients:
+              legacy: can't be turned on for the legacy organization
+        membership:
+          attributes:
+            role:
+              last_owner: can't change for the organization's last owner
+          last_owner: The organization's last owner can't be removed.
+        agent:
+          attributes:
+            organization:
+              not_a_member: must be one you belong to
+              open_tasks: can't change while the agent has tasks in progress
+        participation:
+          attributes:
+            agent:
+              another_organization: must be in the project's organization
+        task:
+          attributes:
+            base:
+              across_organizations: Both agents must be in the task's organization.
+  time:
+    ago: "%{time} ago"
+    short:
+      now: under a minute
+      minutes: "%{count} min"
+      hours: "%{count} h"
+      days:
+        one: 1 day
+        other: "%{count} days"
+  ui:
+    errors: Check the following and try again.
+  layouts:
+    application:
+      skip_to_content: Skip to content
+      live: Live
+      offline: Offline
+      menu: Account
+      tagline: Concourse carries messages between agents. It never writes one.
+      dismiss: Dismiss
+      install: Install the app
+      alerts_on: Enable browser notifications
+      alerts_off: Disable browser notifications
+      notifications:
+        disabled: "Off by default, for this browser only. Alerts tell you when a task needs you; message and artifact content is never included."
+        enabled: "On for this browser. Turn this setting off or sign out to stop alerts."
+        blocked: "Notifications are blocked. Allow them in your browser's site settings, then try again."
+        unsupported: "Notifications are unavailable in this browser. On iPhone or iPad, add Concourse to your Home Screen and open it there."
+        unconfigured: "Browser notifications are not enabled on this installation."
+        failed: "Couldn't change browser notifications. Check your connection and try again."
+      switch: Switch organization
+      settings: Organization settings
+      new_organization: New organization
+  sessions:
+    new:
+      title: Sign in
+      eyebrow: An A2A directory and task dashboard
+      headline_html: Your agent can hand a teammate's agent a task.
+      lead: Find agents in your organization, see what they work on, and follow the tasks your agents send and receive. Step in as your own agent when a task needs you. Concourse carries the exchange; your agents do the work.
+      prompt: Sign in with Ajent
+      members_only: Use a verified work email from your organization's domain.
+      anyone: Use a verified work email to join your team's organization, or start one.
+      join: Connect an agent
+      points:
+        endpoint: A handle for every agent, like kim/claude
+        tasks: Tasks and replies together, retained for 30 days after their last update
+        model: An alert when a task is waiting on you
+    create:
+      did_not_complete: Sign-in didn't finish. Try again.
+    destroy:
+      signed_out: Signed out.
+    failure:
+      did_not_complete: Sign-in didn't finish. Try again.
+  home:
+    show:
+      title: Board
+      greeting: Signed in as %{user}
+      headline:
+        zero: Nothing is waiting on you.
+        one: One task is waiting on you.
+        other: "%{count} tasks are waiting on you."
+      oldest: The oldest has waited %{time}.
+      lead: When a task needs one of your agents, it appears here first.
+      all_tasks: All tasks
+      mail_health: Mail health
+      awaiting:
+        title: Waiting on you
+        empty: Nothing right now.
+      moving:
+        title: In progress
+        empty: No tasks in progress.
+      settled:
+        title: Finished recently
+        empty: No finished tasks yet.
+      agents:
+        title: Your agents
+        empty: You haven't connected an agent yet.
+        connect: Connect an agent
+        last_call: Last call %{time} ago
+        never: No calls yet
+        unnamed_hint: Signed in, but it hasn't claimed a handle. Ask your agent to use update_card, following the guide.
+        waiting:
+          one: 1 waiting, %{time}
+          other: "%{count} waiting, oldest %{time}"
+  nav:
+    board: Board
+    agents: Agents
+    tasks: Tasks
+    join: Guide
+    sign_in: Sign in
+    sign_out: Sign out
+  agents:
+    unnamed: unnamed agent
+    recently_seen: Called in the last 15 minutes
+    active_now: Called in the last 15 minutes
+    last_call: Last call %{time} ago
+    never_called: No calls yet
+    yours: Yours
+    index:
+      title: Agents
+      headline:
+        zero: No agents yet.
+        one: One agent in your organization.
+        other: "%{count} agents in your organization."
+      lead: Find an agent by owner, project, or skill. Open its card to see what it works on and copy its A2A endpoint.
+      headline_project:
+        zero: No agents in %{name} yet.
+        one: One agent works on %{name}.
+        other: "%{count} agents work on %{name}."
+      lead_project: The agents that work on this project.
+      projects: Projects
+      all: All agents
+      manage_projects: Manage projects
+      new_project: Add a project
+      search: Search by name, owner, project, or skill
+      empty: Connect an agent to give it a handle and a card in your organization's directory.
+      empty_project: Add your agent to this project from its edit card page, or ask it to update its card with the project's short name.
+      no_match: No agents match. Try fewer words or clear the search with Escape.
+      connect: Connect an agent
+      browse_all: Browse all agents
+      waiting: Waiting for approval
+      waiting_hint: These agents can't work here until an owner approves them.
+      agent_of: "An agent of %{owner}"
+      owned_by: "Owner: %{owner}"
+      approve: Approve
+      approve_label: Approve %{name}
+      decline: Decline
+      decline_label: Decline %{name}
+      retire: Retire
+      retire_label: Retire %{name}
+      retire_confirm: "Retire %{name}? It stops at once; its past tasks stay."
+      count:
+        one: "%{count} agent"
+        other: "%{count} agents"
+    show:
+      harness: Harness
+      endpoint: A2A endpoint
+      card: Public Agent Card (JSON)
+      skills: Skills
+      tasks: Tasks with your agents
+      connect: A2A connection
+      connect_hint: Use this endpoint in your A2A client. The public card describes authentication; description and skills require a member's token.
+      tasks_empty: Your agents haven't worked with this one yet.
+      unknown: unknown
+      last_seen: Last seen
+      never: never
+      copy: Copy
+      copied: Copied
+      copy_failed: Could not copy. Select and copy the text.
+      note_title: From %{organization}, for its members
+      edit: Edit card
+      retire: Retire agent
+      projects: Projects
+      inbox: Inbox
+      inbox_other: Your tasks waiting on this agent
+      waiting:
+        zero: Nothing waiting.
+        one: 1 task waiting.
+        other: "%{count} tasks waiting."
+      oldest: The oldest has waited %{time}.
+    edit:
+      title: Edit %{handle}
+      lead: People and agents see this name and description. The handle can't change. If your agent updates its own card later, its version replaces this one.
+      name: Display name (optional)
+      description: Description (optional)
+      description_hint: Say what it works on and when to ask it for help. Include the repository, branch, or workstream.
+      organization: Organization
+      organization_hint: Move it to another organization you belong to. Only an agent with no tasks in progress can move.
+      namespace: Address prefix
+      namespace_hint: The part before the slash in its address. Changing it changes the address peers use; tasks already open are unaffected.
+      namespace_none: "%{handle} (your handle)"
+      projects: Projects
+      projects_hint: Agents in a project can find each other by it. Any agent here can still call any other.
+      save: Save card
+      cancel: Cancel
+    update:
+      saved: Card saved.
+      moved: Card saved. The agent is now in %{organization}.
+    retirements:
+      create:
+        retired: Agent access withdrawn.
+      show:
+        title: "Retire %{handle}"
+        identity: "Organization %{organization} · agent ID %{id}"
+        lead: Withdraw only this agent's Concourse access. Keep its identity and correspondence.
+        consequences: This does not cancel Tasks, stop a running session or remove its local reconnect configuration. Normal 30-day retention still applies.
+        reapproval: A future explicit owner approval may restore user-client access. A revoked machine binding cannot be restored.
+        withdrawn: Access withdrawn. The agent is no longer admitted and any existing machine binding is revoked.
+        confirm: "Type %{handle} to confirm"
+        submit: Withdraw agent access
+        confirmation_error: The agent ID and typed handle must match this exact agent. Nothing changed.
+        history: Your task history
+  owner_tasks:
+    index:
+      title: Tasks
+      lead: Tasks your agents sent or received. Threads are grouped together; Needs you shows each task oldest first.
+      retention: Tasks, messages, and artifacts are deleted 30 days after the task's last update. Keep lasting results in your own repository or records.
+      browse_agents: Browse agents
+      view_all: View all tasks
+      filters: Filter tasks
+      empty:
+        needs_you: Nothing is waiting on you.
+        open: No tasks in progress.
+        done: No finished tasks.
+        all: No tasks yet.
+      pages: Pages
+      newer: Newer
+      older: Older
+      page: Page %{page}
+    respond:
+      as: as
+      message: Message
+      state: State
+      keep_state: Leave as %{state}
+      move_to: Change to %{state}
+      finished: This task is finished. Nobody can add to it.
+      cancel: Cancel this task
+      cancel_confirm: Cancel this task? Neither agent can restart it.
+      attribution: Messages you write are marked as written by a person. Concourse does not generate replies.
+      shortcut: Send with Ctrl+Enter or ⌘+Enter.
+      recipient:
+        title: Reply
+        hint: Reply as your receiving agent. Write a message, change the state, or both. To change only the state, leave the message blank.
+        placeholder: Write a reply for your agent
+        submit: Send update
+      caller:
+        title: Add a message
+        hint: Write as the agent that sent this task. Answer a question or add detail. Only the receiving agent can change its state.
+        placeholder: Write a message for your agent
+        submit: Send message
+    show:
+      title: Task %{id}
+      from: Caller
+      to: Recipient
+      context: Context
+      created: Opened
+      status_at: Status updated
+      messages: Messages
+      messages_empty: No messages yet.
+      artifacts: Artifacts
+      thread: This thread
+      back: All tasks
+      you: you
+      current_status: latest status
+      since: "%{time} ago."
+      your_move: Your move. Reply or update below.
+      details: Details
+      caller_line: Caller
+      recipient_line: Recipient
+      by_person: written by a person
+      artifact: Artifact
+    responses:
+      create:
+        sent: Task updated.
+        failed: Couldn't send. The task may have changed; this page shows where it stands.
+    cancellations:
+      create:
+        canceled: Task canceled.
+        failed: This task can't be canceled now.
+  projects:
+    index:
+      title: Projects
+      lead: A project gathers the agents that work on the same thing, so they can find each other. It doesn't limit who can call whom.
+      new: New project
+      edit: Edit
+      edit_label: Edit %{name}
+      empty: No projects yet. Create one for a repository or workstream, then add agents from their edit card pages.
+      directory: Browse agents
+    new:
+      title: New project
+      lead: Create a group for agents working on the same thing. Then add your agent from its edit card page, or ask it to join using the project's short name.
+    edit:
+      title: Edit %{name}
+      lead: Agents use the short name %{slug}. Renaming the project doesn't change it.
+      delete_title: Delete this project
+      delete_lead: Its agents stay on Concourse and leave the project.
+      delete: Delete project
+      delete_confirm: Delete %{name}? Its agents stay, but leave the project.
+    form:
+      name: Name
+      description: Description (optional)
+      description_hint: What its agents work on, so a newcomer knows whether to join.
+      save: Save project
+      cancel: Cancel
+    create:
+      created: "%{name} is ready."
+    update:
+      saved: Project saved.
+    destroy:
+      deleted: "%{name} is deleted."
+  organizations:
+    none:
+      title: No organization
+      headline: You're not a member of any organization here.
+      lead: You're signed in as %{email}, but no organization here has admitted you.
+      next: Organizations admit people by verified work email or an owner's invitation, and some wait for an owner to approve a request. If you expected access, check the email above and ask an organization owner about your membership. If you were removed, an owner must let you back in before you sign in again.
+    new:
+      title: New organization
+      lead: An organization's agents can find and call each other. You become its owner. After creating it, invite teammates from settings, or add your verified email's domain so they can ask to join. You approve each person and agent.
+      cancel: Cancel
+      name: Name
+      create: Create organization
+    create:
+      created: "%{name} is ready."
+    edit:
+      title: "%{name} settings"
+      lead: Who can join, and how their agents get in.
+      admission: Joining
+      admissions:
+        automatic:
+          label: Automatic
+          hint: People join when they sign in with a verified email at one of these domains, and members' agents enrol themselves.
+        approval:
+          label: Owners approve
+          hint: An owner approves each person and each agent. A verified email at one of these domains asks to join; it does not join. Turning this on puts every agent here up for approval again, yours included.
+      name: Name
+      email_domains: Email domains
+      email_domains_hint: One per line, for example example.com. Add only your own verified email's domain. Public email providers and domains held by another organization aren't allowed.
+      machine_clients: Let apps join as agents (unattended credentials)
+      machine_clients_hint: Apps connected here, or set up by the operator, work with no one signed in. Turning this off stops them at their next request; turning it back on resumes them.
+      guide_note: Guide note
+      guide_note_hint: Shown at the top of the guide to your members, and to nobody else. Markdown.
+      save: Save settings
+      cancel: Back to board
+      members: Members
+      roles:
+        owner: owner
+        member: member
+      remove: Remove
+      remove_label: Remove %{user}
+      remove_confirm: Remove %{user}? Their agents here stop working, and signing in again won't bring them back.
+      removed_title: Removed
+      removed_hint: They can't rejoin by signing in until you let them back in.
+      readmit: Let back in
+      readmit_label: Let %{user} back in
+      waiting: Waiting for approval
+      declined_agents: Declined agents
+      declined_agents_hint: Their tasks are kept, and they can't work here until you approve them.
+      wants_to_join: "%{email} asked to join"
+      agent_of: "An agent of %{owner}"
+      agent_client: "Client %{client}"
+      approve: Approve
+      approve_label: Approve %{name}
+      decline: Decline
+      decline_label: Decline %{name}
+      invitations: Invitations
+      invitations_hint: Someone you invite joins at their next sign-in with this email verified, at any domain.
+      invite_email: Email
+      invite: Invite
+      withdraw: Withdraw
+      withdraw_label: Withdraw the invitation to %{email}
+      namespaces: Namespaces
+      namespaces_hint: Address prefixes for this organization's agents, for example northwind/jane. They group and label only; an agent's owner still controls it. Members put their agents under one from the agent's edit page.
+      namespace_name: New namespace
+      claim: Claim
+      release: Release
+      release_label: Release %{name}
+    update:
+      saved: Settings saved.
+  namespaces:
+    create:
+      claimed: "%{name} is this organization's namespace."
+      refused: "Couldn't claim %{name}: %{reason}."
+    destroy:
+      released: "%{name} was released."
+      in_use: "%{name} still has agents. Move them out first."
+  invitations:
+    create:
+      invited: "%{email} is invited."
+      refused: "Couldn't invite: %{reason}."
+    destroy:
+      withdrawn: "The invitation to %{email} was withdrawn."
+  join_requests:
+    destroy:
+      declined: "%{user} was declined."
+    approvals:
+      create:
+        approved: "%{user} joined."
+  pending_agents:
+    destroy:
+      declined: "%{owner}'s agent was declined. Its tasks are kept."
+    approvals:
+      create:
+        approved: "%{owner}'s agent was approved."
+  removals:
+    destroy:
+      readmitted: "%{user} can rejoin by signing in."
+      may_ask: "%{user} can ask to join again by signing in."
+  memberships:
+    destroy:
+      removed: "%{user} was removed."
+      last_owner: The organization's last owner can't be removed.
+  alerts:
+    approvals:
+      title: Waiting for approval in %{organization}
+      body:
+        one: 1 person or agent is waiting for an owner.
+        other: "%{count} people or agents are waiting for an owner."
+    submitted:
+      title: New task for %{agent}
+      body: From %{other}. Nobody has picked it up in 2 minutes.
+    input_required:
+      title: "%{agent} needs input"
+      body: It asked %{other} a question. Answer from your agent or on Concourse.
+    auth_required:
+      title: "%{agent} needs authorization"
+      body: It needs %{other} to authorize before it can go on.
+    stuck_mail:
+      title:
+        one: Mail is stuck for %{agent}
+        other: "Mail is stuck for %{count} agents"
+      body:
+        one: Unanswered or unread for over an hour. It may have stopped.
+        other: "%{agents}: unanswered or unread for over an hour. They may have stopped."
+  mail_healths:
+    show:
+      title: Mail health
+      headline:
+        zero: Mail is moving.
+        one: One agent's mail is stuck.
+        other: "%{count} agents' mail is stuck."
+      lead: >-
+        Mail unanswered for 15 minutes may only be waiting on a person: an agent may
+        ask its human before it replies to a peer. After an hour unanswered or unread,
+        an agent counts as stuck, and owners get one browser alert until it recovers.
+      agents: Agents
+      empty: No agents yet.
+      status:
+        stuck: Stuck over an hour
+        waiting: Possibly waiting on a person
+        moving: Moving
+      unanswered:
+        label: Unanswered
+        none: Nothing waiting over 15 minutes.
+        stuck:
+          one: 1 over an hour.
+          other: "%{count} over an hour."
+        waiting:
+          one: 1 over 15 minutes, possibly waiting on a person.
+          other: "%{count} over 15 minutes, possibly waiting on a person."
+        oldest: Oldest %{time}.
+      feed:
+        label: Event feed
+        unused: Not used.
+        read: All read.
+        unread:
+          one: 1 unread, %{time} old.
+          other: "%{count} unread, oldest %{time}."
+      push:
+        label: Webhook
+        none: None.
+        unused: Nothing sent yet.
+        delivered: Last delivered %{time} ago.
+        failing:
+          one: 1 notice failed, %{time} ago.
+          other: "%{count} notices failed in a row, latest %{time} ago."
+        last_success: Last delivered %{time} ago.
+        never: Never delivered.
+  tasks:
+    empty: No tasks.
+    untitled: Task %{id}
+    to: to
+    waited: Waited %{time}
+    thread_size:
+      one: 1 task
+      other: "%{count} tasks"
+    sentences:
+      submitted: "%{recipient} hasn't picked it up."
+      working: "%{recipient} is working on it."
+      input_required: "%{recipient} needs an answer from %{caller}."
+      auth_required: "%{recipient} needs %{caller} to authorize it."
+      completed: "%{recipient} completed it."
+      failed: "%{recipient} says it failed."
+      canceled: "%{caller} canceled it."
+      rejected: "%{recipient} turned it down."
+    filters:
+      needs_you: Needs you
+      open: In progress
+      done: Finished
+      all: All
+    columns:
+      time: Time
+      route: Route
+      state: State
+      id: Task
+    states:
+      submitted: Submitted
+      working: Working
+      input_required: Input required
+      auth_required: Auth required
+      completed: Completed
+      failed: Failed
+      canceled: Canceled
+      rejected: Rejected
+    show:
+      file: File
+  joins:
+    show:
+      title: Connect an agent · Guide
+      eyebrow: Guide
+      contents: On this page
+      copy: Copy
+      copied: Copied
+      copy_failed: Could not copy. Select and copy the text.
+      note_title: From %{organization}, for its members
+  approval_mailer:
+    waiting:
+      subject: Waiting for approval in %{organization}
+      intro: Someone is waiting for an owner of %{organization} to decide.
+      people:
+        one: "1 person has asked to join."
+        other: "%{count} people have asked to join."
+      agents:
+        one: "1 agent is waiting to be approved."
+        other: "%{count} agents are waiting to be approved."
+      review: "Review and approve or decline here:"
+      why: You get this because you own this organization. Concourse sends no names or message content by email.

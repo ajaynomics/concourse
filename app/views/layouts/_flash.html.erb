@@ -1,0 +1,20 @@
+<%# Fixed under the header, so a toast never covers the account menu. The
+    toast survives a morph refresh: flash is rendered once per request and a
+    refresh re-renders without it, which removes it; dismiss is for sooner. %>
+<% if notice.present? || alert.present? %>
+  <div id="flash" role="status" aria-live="polite"
+       class="pointer-events-none fixed inset-x-0 top-[calc(4.5rem+env(safe-area-inset-top))] z-30 flex flex-col items-center gap-2 px-4 sm:top-[calc(5.5rem+env(safe-area-inset-top))]">
+    <% { notice: [ notice, "bg-ink-50 text-ink-900", "text-go-400" ],
+         alert: [ alert, "bg-stop-400 text-white", "text-white" ] }.each do |kind, (text, tone, dot)| %>
+      <% next if text.blank? %>
+      <div id="<%= kind %>" class="pointer-events-auto flex max-w-[min(36rem,100%)] items-center gap-3 rounded-full py-1.5 pr-2 pl-5 text-[15px] font-medium shadow-[0_20px_25px_-5px_rgb(0_0_0/0.12),0_8px_10px_-6px_rgb(0_0_0/0.1)] transition duration-300 animate-arrive <%= tone %>"
+           data-controller="flash" data-flash-dismiss-after-value="<%= kind == :notice ? 5000 : 0 %>">
+        <span><%= text %></span>
+        <button type="button" data-action="flash#dismiss" aria-label="<%= t("layouts.application.dismiss") %>"
+                class="-my-2 -mr-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl opacity-50 transition hover:opacity-100">
+          <%= icon(:close, css: "size-4") %>
+        </button>
+      </div>
+    <% end %>
+  </div>
+<% end %>

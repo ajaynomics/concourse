@@ -1,0 +1,12 @@
+<%# The tasks under parent in a thread, each with its own under it. A thread
+    starts from parent: nil. %>
+<ol class="<%= local_assigns[:css] || "thread-tree" %>">
+  <% context.children_of(local_assigns[:parent]).each do |task| %>
+    <li id="<%= dom_id(task, :tree) %>">
+      <%= render "tasks/row", task: task, current: local_assigns[:current] %>
+      <% if context.children_of(task).any? %>
+        <%= render "tasks/tree", context: context, parent: task, current: local_assigns[:current] %>
+      <% end %>
+    </li>
+  <% end %>
+</ol>

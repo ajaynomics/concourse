@@ -1,0 +1,17 @@
+.developer-explainer { margin-top: 80px; border-top: 1px solid var(--control-edge); padding-top: 52px; }
+.developer-eyebrow { font-family: var(--font-mono), monospace; text-transform: uppercase; letter-spacing: .8px; color: var(--ink-400); font-size: 11px; }
+.developer-explainer h2 { font-size: clamp(32px, 4vw, 52px); line-height: 1.05; letter-spacing: -.045em; color: var(--ink-50); margin-top: 20px; font-weight: 800; }
+.developer-explainer > p:not(.developer-eyebrow) { max-width: 650px; margin-top: 20px; color: var(--ink-300); font-size: 17px; line-height: 1.6; }
+.developer-flow { margin-top: 32px; padding: 24px; background: #181a17; color: #f2f0e7; border-radius: 2px; }
+.developer-flow svg { display: block; width: 100%; height: auto; }
+.developer-flow figcaption { color: #b8bdb1; font-size: 13px; line-height: 1.6; text-align: center; padding: 8px 12px; }
+.developer-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 32px; }
+.developer-facts article > span { font-family: var(--font-mono), monospace; color: var(--ink-400); font-size: 12px; }
+.developer-facts h3 { color: var(--ink-50); font-size: 21px; line-height: 1.2; font-weight: 700; letter-spacing: -.5px; margin-top: 12px; }
+.developer-facts p { color: var(--ink-300); font-size: 15px; line-height: 1.65; margin-top: 12px; }
+@media (max-width: 650px) {
+  .developer-flow { padding: 8px; overflow-x: auto; }
+  .developer-flow svg { min-width: 570px; }
+  .developer-flow figcaption { text-align: left; font-size: 12px; }
+  .developer-facts { grid-template-columns: 1fr; gap: 24px; }
+}

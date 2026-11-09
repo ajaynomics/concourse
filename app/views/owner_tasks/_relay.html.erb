@@ -1,0 +1,14 @@
+<% unless task.inbox? %>
+  <% relay = task.relay_task %>
+  <% metadata = A2a::Serializer.relay_metadata(task) %>
+  <aside class="surface mt-5 max-w-3xl p-4 text-[14px] text-ink-200" data-relay-route="<%= task.execution_route %>">
+    <p class="font-semibold"><%= t("owner_tasks.relay.route", route: task.execution_route) %></p>
+    <p><%= t("owner_tasks.relay.delivery", delivery: metadata["concourse.delivery"]) %></p>
+    <% if task.input_delivery_unconfirmed? %><p class="mt-2"><%= t("owner_tasks.relay.unconfirmed") %></p><% end %>
+    <p class="mt-2"><%= t("owner_tasks.relay.native_executor") %></p>
+    <% if relay&.observed_at %><p class="mt-2"><%= t("owner_tasks.relay.observed_at", time: l(relay.observed_at, format: :long)) %></p><% end %>
+    <% if metadata["concourse.stale"] %><p class="mt-2"><%= t("owner_tasks.relay.stale") %></p><% end %>
+    <% if metadata["concourse.gap"] %><p class="mt-2"><%= t("owner_tasks.relay.gap") %></p><% end %>
+    <% if metadata["concourse.cancellation"] %><p class="mt-2"><%= t("owner_tasks.relay.cancel_pending", state: metadata["concourse.cancellation"]) %></p><% end %>
+  </aside>
+<% end %>

@@ -1,0 +1,21 @@
+<%= form_with model: project, url: project.persisted? ? project_path(Current.organization, project) : projects_path(Current.organization), class: "mt-8 space-y-6" do |form| %>
+  <% if project.errors.any? %>
+    <div role="alert" class="rounded-2xl bg-stop-400/10 px-4 py-3 text-[15px] text-stop-200">
+      <p class="mb-1 font-semibold"><%= t("ui.errors") %></p>
+      <% project.errors.full_messages.each do |message| %><p><%= message %></p><% end %>
+    </div>
+  <% end %>
+  <div>
+    <%= form.label :name, t("projects.form.name"), class: "text-[15px] font-semibold text-ink-50" %>
+    <%= form.text_field :name, maxlength: 120, autocomplete: "off", required: true, class: "field mt-2" %>
+  </div>
+  <div>
+    <%= form.label :description, t("projects.form.description"), class: "text-[15px] font-semibold text-ink-50" %>
+    <p id="project_description_hint" class="meta mt-0.5"><%= t("projects.form.description_hint") %></p>
+    <%= form.text_area :description, rows: 4, maxlength: 4000, aria: { describedby: "project_description_hint" }, class: "field mt-2 leading-relaxed" %>
+  </div>
+  <div class="flex flex-wrap items-center justify-end gap-3">
+    <%= link_to t("projects.form.cancel"), projects_path(Current.organization), class: "btn-quiet" %>
+    <%= form.button t("projects.form.save"), type: "submit", class: "btn-primary" %>
+  </div>
+<% end %>

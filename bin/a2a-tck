@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+# Run the A2A TCK at MUST level over JSON-RPC.
+#
+#   bin/a2a-tck
+#     Boot this app on a free port with a throwaway database, a localhost
+#     Ajent introspection stub, and the conformance agent. Tear it down.
+#
+#   bin/a2a-tck --live https://concourse.example.com/a2a/concourse/conformance
+#     Run against a deployed agent. A2A_TCK_TOKEN must already be set.
+#
+# The TCK is pinned at 263b9cf and cached under tmp/ (gitignored). A pytest
+# plugin adds the bearer token; the TCK tree is not modified.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+COMMIT="263b9cfaf16a554bdfb166a7ba5b67716e946349"
+TCK_DIR="$ROOT/tmp/a2a-tck"
+PLUGIN_DIR="$ROOT/test/a2a_tck"
+TCK_URL="https://github.com/a2aproject/a2a-tck.git"
+
+prepare_tck() {
+  mkdir -p "$ROOT/tmp"
+  if [[ ! -d "$TCK_DIR/.git" ]]; then
+    git clone --filter=blob:none "$TCK_URL" "$TCK_DIR"
+  fi
+  if [[ "$(git -C "$TCK_DIR" rev-parse HEAD)" != "$COMMIT" ]]; then
+    git -C "$TCK_DIR" fetch --depth 1 origin "$COMMIT"
+    git -C "$TCK_DIR" checkout --detach "$COMMIT"
+  fi
+  (cd "$TCK_DIR" && uv sync --frozen)
+}
+
+run_tck() {
+  local host="$1"
+  local status=0
+  cd "$TCK_DIR"
+  set +e
+  PYTHONPATH="$PLUGIN_DIR${PYTHONPATH:+:$PYTHONPATH}" \
+    uv run python run_tck.py \
+      --sut-host "$host" \
+      --transport jsonrpc \
+      --level must \
+      -- -p concourse_auth_plugin
+  status=$?
+  set -e
+  if [[ "$status" -eq 0 ]]; then
+    return 0
+  fi
+  if only_documented_tck_contradiction "$TCK_DIR/reports/junitreport.xml"; then
+    echo "TCK pytest failed only requirement id CORE-SEND-003, a runner bug: the requirement describes ContentTypeNotSupportedError (§3.1.1) but does not set expected_error, so a correct error is scored as a failure. The exemption is that exact id and no other. Documented in docs/upstream/a2a-tck.md. Not an app failure." >&2
+    return 0
+  fi
+  return "$status"
+}
+
+only_documented_tck_contradiction() {
+  local report="$1"
+  [[ -f "$report" ]] || return 1
+  ruby - "$report" <<'RUBY'
+require "rexml/document"
+doc = REXML::Document.new(File.read(ARGV[0]))
+failed = []
+doc.elements.each("//testcase") do |node|
+  next unless node.elements["failure"] || node.elements["error"]
+  failed << "#{node.attributes["classname"]} #{node.attributes["name"]}"
+end
+# Exact requirement id only. A second failure, a different id, or a name that
+# does not carry the id fails closed.
+ids = failed.filter_map { |name| name[/\[(CORE-[A-Z0-9-]+)-jsonrpc\]/, 1] }
+exit(failed.size == 1 && ids == ["CORE-SEND-003"] ? 0 : 1)
+RUBY
+}
+
+if [[ "${1:-}" == "--live" ]]; then
+  host="${2:?usage: bin/a2a-tck --live https://concourse.example.com/a2a/concourse/conformance}"
+  if [[ -z "${A2A_TCK_TOKEN:-}" ]]; then
+    echo "A2A_TCK_TOKEN is required for --live" >&2
+    exit 1
+  fi
+  prepare_tck
+  run_tck "$host"
+  exit $?
+fi
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "usage: bin/a2a-tck [--live SUT_URL]" >&2
+  exit 0
+fi
+
+if [[ -n "${1:-}" ]]; then
+  echo "unknown argument: $1" >&2
+  exit 2
+fi
+
+free_port() {
+  ruby -e 'require "socket"; s = TCPServer.new("127.0.0.1", 0); puts s.addr[1]; s.close'
+}
+
+APP_PORT="$(free_port)"
+FAKE_PORT="$(free_port)"
+DB="$ROOT/tmp/a2a-tck-$$.sqlite3"
+LOG="$ROOT/tmp/a2a-tck-rails-$$.log"
+RAILS_PID=""
+FAKE_PID=""
+
+stop_pid() {
+  local pid="$1"
+  [[ -z "$pid" ]] && return 0
+  kill "$pid" 2>/dev/null || return 0
+  local _
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    kill -0 "$pid" 2>/dev/null || return 0
+    sleep 0.2
+  done
+  kill -9 "$pid" 2>/dev/null || true
+}
+
+cleanup() {
+  local status=$?
+  stop_pid "$RAILS_PID"
+  if [[ -n "${FAKE_PIDFILE:-}" && -f "$FAKE_PIDFILE" ]]; then
+    stop_pid "$(cat "$FAKE_PIDFILE")"
+  fi
+  stop_pid "$FAKE_PID"
+  rm -f "$DB" "$DB-shm" "$DB-wal" "${FAKE_PIDFILE:-}"
+  if [[ "$status" -ne 0 && -f "$LOG" ]]; then
+    echo "---- rails log ($LOG) ----" >&2
+    tail -n 80 "$LOG" >&2
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
+
+export RAILS_ENV=test
+export CONCOURSE_DATABASE="$DB"
+export A2A_TCK_APP_URL="http://127.0.0.1:${APP_PORT}"
+export OIDC__ISSUER="http://127.0.0.1:${FAKE_PORT}"
+export INTROSPECTION__CLIENT_ID="${INTROSPECTION__CLIENT_ID:-concourse-introspection}"
+export INTROSPECTION__CLIENT_SECRET="${INTROSPECTION__CLIENT_SECRET:-test_introspection_secret}"
+export A2A_TCK_TOKEN="tck-$(ruby -e 'require "securerandom"; print SecureRandom.hex(16)')"
+export PORT="$FAKE_PORT"
+
+cd "$ROOT"
+FAKE_LOG="$ROOT/tmp/a2a-tck-fake-$$.log"
+FAKE_PIDFILE="$ROOT/tmp/a2a-tck-fake-$$.pid"
+export FAKE_PIDFILE
+bundle exec ruby "$PLUGIN_DIR/fake_introspection.rb" >"$FAKE_LOG" 2>&1 &
+FAKE_PID=$!
+fake_ready=0
+for _ in $(seq 1 40); do
+  if ruby -e 'require "socket"; TCPSocket.new("127.0.0.1", ARGV[0]).close' "$FAKE_PORT" 2>/dev/null; then
+    fake_ready=1
+    break
+  fi
+  if ! kill -0 "$FAKE_PID" 2>/dev/null; then
+    echo "introspection stub exited" >&2
+    cat "$FAKE_LOG" >&2
+    exit 1
+  fi
+  sleep 0.1
+done
+if [[ "$fake_ready" -ne 1 ]]; then
+  echo "introspection stub did not listen" >&2
+  cat "$FAKE_LOG" >&2
+  exit 1
+fi
+
+cd "$ROOT"
+bin/rails db:prepare
+bin/rails db:seed
+# Concourse admits people on the web, never from a token. The TCK's caller has
+# no browser, so it is made a member of the default organization directly.
+bin/rails runner 'Organization.default.memberships.find_or_create_by!(user: User.find_or_create_from_subject!(ajent_sub: ENV.fetch("A2A_TCK_SUB", "tck-caller"), email: "tck-caller@example.com"))'
+FALCON_BIND="http://127.0.0.1:${APP_PORT}" bin/falcon >"$LOG" 2>&1 &
+RAILS_PID=$!
+
+ready=0
+for _ in $(seq 1 60); do
+  if curl -sf "http://127.0.0.1:${APP_PORT}/up" >/dev/null; then
+    ready=1
+    break
+  fi
+  if ! kill -0 "$RAILS_PID" 2>/dev/null; then
+    echo "rails server exited before it was ready" >&2
+    exit 1
+  fi
+  sleep 0.5
+done
+if [[ "$ready" -ne 1 ]]; then
+  echo "rails server did not become ready" >&2
+  exit 1
+fi
+
+prepare_tck
+run_tck "http://127.0.0.1:${APP_PORT}/a2a/concourse/conformance"

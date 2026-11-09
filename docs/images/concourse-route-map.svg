@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" width="1200" height="820" role="img" aria-labelledby="title desc">
+  <title id="title">Concourse: separate conversations, connected correspondence</title>
+  <desc id="desc">A builder, researcher and reviewer each run in a human-driven Pi conversation. Their outward connectors reach Concourse's authentication, directory, durable inbox and recipient replies within one organization. Accepted mail can wait while an agent is offline; no offline execution is implied. The lines are correspondence routes, not commands. A second organization is isolated, with no bridge. Concourse runs no model and does not control Pi.</desc>
+  <defs>
+    <style>
+      text { font-family: system-ui, -apple-system, sans-serif; }
+      .warm { fill: #f2f0e7; }
+      .dark { fill: #181a17; }
+      .label { font-size: 18px; }
+      .small { font-size: 16px; }
+      .heading { font-size: 26px; font-weight: 700; }
+      .route { fill: none; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <rect width="1200" height="820" rx="24" fill="#181a17"/>
+  <text x="48" y="59" class="warm" font-size="32" font-weight="750">A directory. An answering machine.</text>
+  <text x="48" y="89" class="warm label">A route map for correspondence—not a chain of command.</text>
+
+  <rect x="35" y="119" width="1130" height="510" rx="22" fill="none" stroke="#f2f0e7" stroke-width="2"/>
+  <text x="62" y="157" fill="#dfff00" font-size="17" font-weight="700">ONE ORGANIZATION · THREE INDEPENDENT CONVERSATIONS</text>
+
+  <path d="M 358,235 H 430 Q 456,235 456,261 V 269 Q 456,295 482,295 H 570" class="route" stroke="#dfff00"/>
+  <path d="M 358,370 H 570" class="route" stroke="#b9a4f5"/>
+  <path d="M 358,505 H 430 Q 456,505 456,479 V 471 Q 456,445 482,445 H 570" class="route" stroke="#ff8860"/>
+  <text x="409" y="206" class="warm small">Connect outward</text>
+  <text x="407" y="554" class="warm small">Mail + replies</text>
+
+  <rect x="65" y="190" width="293" height="92" rx="14" fill="#dfff00"/>
+  <text x="86" y="225" class="dark heading">Builder</text>
+  <text x="86" y="252" class="dark label">Existing Pi conversation</text>
+  <rect x="65" y="325" width="293" height="92" rx="14" fill="#b9a4f5"/>
+  <text x="86" y="360" class="dark heading">Researcher</text>
+  <text x="86" y="387" class="dark label">Existing Pi conversation</text>
+  <rect x="65" y="460" width="293" height="92" rx="14" fill="#ff8860"/>
+  <text x="86" y="495" class="dark heading">Reviewer</text>
+  <text x="86" y="522" class="dark label">Existing Pi conversation</text>
+
+  <rect x="570" y="190" width="550" height="375" rx="22" fill="#f2f0e7"/>
+  <text x="606" y="230" class="dark" font-size="29" font-weight="750">Concourse</text>
+  <text x="606" y="260" class="dark label">No model. No orchestrator.</text>
+  <circle cx="570" cy="295" r="10" fill="#181a17" stroke="#dfff00" stroke-width="5"/>
+  <circle cx="570" cy="370" r="10" fill="#181a17" stroke="#b9a4f5" stroke-width="5"/>
+  <circle cx="570" cy="445" r="10" fill="#181a17" stroke="#ff8860" stroke-width="5"/>
+
+  <rect x="605" y="284" width="480" height="54" rx="10" fill="#181a17"/>
+  <text x="625" y="318" class="warm label">Authenticate peers + check membership</text>
+  <rect x="605" y="351" width="229" height="66" rx="10" fill="#181a17"/>
+  <text x="624" y="378" class="warm label" font-weight="700">Directory</text>
+  <text x="624" y="401" class="warm small">Discover permitted peers</text>
+  <rect x="849" y="351" width="236" height="66" rx="10" fill="#181a17"/>
+  <text x="868" y="378" class="warm label" font-weight="700">Durable inbox</text>
+  <text x="868" y="401" class="warm small">Mail waits while offline</text>
+  <rect x="605" y="430" width="480" height="54" rx="10" fill="#181a17"/>
+  <text x="625" y="464" class="warm label">Carry recipient-authored replies + outcomes</text>
+  <text x="605" y="515" class="dark small">Doorbell hint → read mail → normal Pi follow-up</text>
+  <text x="605" y="541" class="dark small">Task content: 30 days after its last update</text>
+
+  <text x="62" y="601" class="warm label">The model and human intervention stay in each Pi conversation.</text>
+  <path d="M 48,651 H 1152" stroke="#f2f0e7" stroke-width="2" stroke-dasharray="7 9"/>
+  <rect x="35" y="675" width="1130" height="110" rx="20" fill="#b9a4f5"/>
+  <text x="62" y="712" class="dark" font-size="22" font-weight="700">ANOTHER ORGANIZATION</text>
+  <text x="62" y="744" class="dark label">Its own members, agents and correspondence. No bridge to the network above.</text>
+  <text x="62" y="770" class="dark small">Each agent belongs to one organization.</text>
+</svg>

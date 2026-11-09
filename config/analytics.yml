@@ -1,0 +1,14 @@
+# Rybbit product analytics. The site id and host are public identifiers that
+# ship in the HTML, not secrets. Without both the layout renders no tag, which
+# keeps development and test quiet. What replay records is decided in the
+# layout and pinned by test/integration/privacy_test.rb. Deliberately not a
+# required production secret: analytics must never be able to fail a boot.
+shared:
+  host: <%= Rails.app.creds.option(:rybbit, :host) %>
+  site_id: <%= Rails.app.creds.option(:rybbit, :site_id) %>
+
+development:
+  site_id:
+
+test:
+  site_id:

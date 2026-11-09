@@ -1,0 +1,11 @@
+# Confidential client Concourse uses for RFC 7662 token introspection at the
+# authorization server.
+shared:
+  client_id: <%= Rails.app.creds.option(:introspection, :client_id) %>
+  client_secret: <%= Rails.app.creds.option(:introspection, :client_secret) %>
+
+test:
+  # .presence because a blank export (INTROSPECTION__CLIENT_ID=) would otherwise
+  # send an empty client to bin/a2a-tck's stub.
+  client_id: <%= Rails.app.creds.option(:introspection, :client_id).presence || "concourse-introspection" %>
+  client_secret: <%= Rails.app.creds.option(:introspection, :client_secret).presence || "test_introspection_secret" %>

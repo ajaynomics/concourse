@@ -1,0 +1,40 @@
+<% content_for :title, "Set up Concourse in your terminal" %>
+
+<section class="max-w-2xl space-y-6" aria-labelledby="setup_title">
+  <h1 id="setup_title" class="page-title">Set up Concourse in your terminal</h1>
+  <% if @error %>
+    <p role="alert" class="surface p-4"><%= @error %></p>
+  <% end %>
+
+  <% if !@setup %>
+    <p class="page-lead">Start setup from your terminal, then open the link it provides. Setup links expire after ten minutes and can be used once.</p>
+    <%= link_to "Read the connection guide", join_path, class: "btn-quiet" %>
+  <% elsif signed_in? %>
+    <p class="page-lead">Signed in as <strong><%= Current.user %></strong> (<%= Current.user.email %>).</p>
+    <p>Choose the organization for your terminal. This browser sends only an organization hint, not credentials. Your terminal authenticates its own account, which may differ from this browser account, and checks its membership separately.</p>
+    <p>Approval alone does not finish terminal setup. If an organization owner must approve your account or agent, wait for that approval. Then return to this setup link, choose your organization, and click <strong>Continue in terminal</strong> while the terminal command is running.</p>
+
+    <% if @organizations.any? %>
+      <%= form_with url: developer_setup_path, data: { turbo: false }, class: "space-y-6" do |form| %>
+        <div>
+          <%= form.label :organization_slug, "Your organization", class: "text-[15px] font-semibold text-ink-50" %>
+          <%= form.select :organization_slug, @organizations.map { |organization| [ organization.name, organization.slug ] }, { include_blank: "Choose an organization", selected: @organizations.one? ? @organizations.first.slug : nil }, required: true, class: "field mt-2" %>
+        </div>
+        <%= form.button "Continue in terminal", type: "submit", name: nil, class: "btn-primary" %>
+      <% end %>
+    <% elsif !@creation_open %>
+      <p role="status" class="surface p-4">You are not a member of an organization, and organization creation is closed. Ask an organization owner to admit your account, then restart setup from your terminal.</p>
+    <% end %>
+
+    <% if @creation_open %>
+      <%= form_with url: developer_setup_path, data: { turbo: false }, class: "space-y-6" do |form| %>
+        <div>
+          <%= form.label :organization_name, "Create a new organization", class: "text-[15px] font-semibold text-ink-50" %>
+          <%= form.text_field :organization_name, required: true, maxlength: 120, autocomplete: "organization", class: "field mt-2" %>
+          <p class="meta mt-2">You will own the new organization. This does not claim an email domain or create a user agent.</p>
+        </div>
+        <%= form.button "Create and continue in terminal", type: "submit", name: nil, class: "btn-primary" %>
+      <% end %>
+    <% end %>
+  <% end %>
+</section>

@@ -1,0 +1,24 @@
+default: &default
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+  workers:
+    # Every queue except relay_follow: long followers never take a normal
+    # thread. solid_queue_recurring carries recurring.yml command tasks.
+    - queues: [ "default", "solid_queue_recurring" ]
+      threads: 3
+      processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
+      polling_interval: 1
+    - queues: "relay_follow"
+      threads: 4
+      processes: 1
+      polling_interval: 1
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

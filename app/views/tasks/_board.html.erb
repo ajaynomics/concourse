@@ -1,0 +1,10 @@
+<%# A list of tasks: text on hairlines, one row each. %>
+<% if tasks.any? %>
+  <ol class="rows <%= local_assigns[:css] %>">
+    <% tasks.each do |task| %>
+      <li id="<%= dom_id(task, :board) %>"><%= render "tasks/row", task: task, waiting: local_assigns[:waiting] %></li>
+    <% end %>
+  </ol>
+<% else %>
+  <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= local_assigns[:empty] || t("tasks.empty") %></p>
+<% end %>

@@ -1,0 +1,2 @@
+web: bin/falcon
+css: bin/rails tailwindcss:watch

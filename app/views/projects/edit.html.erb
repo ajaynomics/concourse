@@ -1,0 +1,17 @@
+<% content_for :title, t(".title", name: @project.name_was) %>
+
+<section class="max-w-2xl">
+  <h1 class="page-title wrap-break-word"><%= t(".title", name: @project.name_was) %></h1>
+  <p class="page-lead"><%= t(".lead", slug: @project.slug) %></p>
+  <%= render "form", project: @project %>
+</section>
+
+<% if Current.organization_owner? %>
+  <section aria-labelledby="delete_title" class="mt-12 max-w-2xl">
+    <h2 id="delete_title" class="section-title mb-3"><%= t(".delete_title") %></h2>
+    <p class="text-[15px] text-ink-300"><%= t(".delete_lead") %></p>
+    <%= button_to t(".delete"), project_path(Current.organization, @project), method: :delete,
+          form: { data: { turbo_confirm: t(".delete_confirm", name: @project.name_was) } },
+          class: "btn-danger mt-4 -ml-3 min-h-11 text-[14px]" %>
+  </section>
+<% end %>

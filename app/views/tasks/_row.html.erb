@@ -1,0 +1,25 @@
+<%# One task as a row: its title (the caller's first line), the lifeline,
+    the state's name, when, and the two agents. With waiting: true it says
+    what the task is waiting for and how long instead. current: marks the
+    task whose page this is. %>
+<% waiting = local_assigns[:waiting] %>
+<%= link_to my_task_path(Current.organization, task), class: "row", data: { turbo_frame: "_top" },
+      aria: { current: ("page" if local_assigns[:current] == task) } do %>
+  <p class="row-title"><%= task_headline(task) %></p>
+  <div class="row-meta flex-nowrap">
+    <%= lifeline(task, transition: local_assigns[:current] != task) %>
+    <%= state_badge(task) %>
+    <span class="ml-auto shrink-0 tabular-nums <%= "text-ink-200" if waiting %>">
+      <% if waiting %><%= t("tasks.waited", time: waited(task.actionable_since || task.status_at)) %><% else %><%= board_time(task.updated_at) %><% end %>
+    </span>
+  </div>
+  <p class="meta mt-1 truncate">
+    <% if waiting %>
+      <%= state_sentence(task) %>
+    <% else %>
+      <%= agent_handle(task.caller_agent, link: false, mine: mine?(task.caller_agent)) %>
+      <span aria-label="<%= t("tasks.to") %>">→</span>
+      <%= agent_handle(task.recipient_agent, link: false, mine: mine?(task.recipient_agent)) %>
+    <% end %>
+  </p>
+<% end %>

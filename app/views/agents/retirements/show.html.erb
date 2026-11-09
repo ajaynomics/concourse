@@ -1,0 +1,30 @@
+<% content_for :title, t(".title", handle: @agent.qualified_handle) %>
+
+<%= link_to agents_path(Current.organization), class: "btn-quiet -ml-3 min-h-9 text-[13px]" do %><%= icon(:back, css: "size-4") %> <%= t("nav.agents") %><% end %>
+
+<section class="mt-4 max-w-2xl">
+  <h1 class="page-title break-all"><%= t(".title", handle: @agent.qualified_handle) %></h1>
+  <p class="meta mt-2"><%= t(".identity", organization: Current.organization.slug, id: @agent.id) %></p>
+  <p class="page-lead"><%= t(".lead") %></p>
+  <p class="mt-4 text-[15px] text-ink-300"><%= t(".consequences") %></p>
+  <p class="mt-4 text-[15px] text-ink-300"><%= t(".reapproval") %></p>
+
+  <% binding = @agent.client_binding %>
+  <% if @agent.admitted_at.nil? && @agent.declined_at.present? && (!binding || binding.revoked_at.present?) %>
+    <p role="status" class="mt-8 text-[17px] text-ink-100"><%= t(".withdrawn") %></p>
+  <% else %>
+    <%= form_with scope: :retirement, url: retirement_path(Current.organization, @agent.prefix, @agent.handle), class: "mt-8 space-y-6" do |form| %>
+      <% if @confirmation_error %>
+        <p role="alert" class="text-[15px] text-stop-200"><%= t(".confirmation_error") %></p>
+      <% end %>
+      <%= form.hidden_field :agent_id, value: @agent.id %>
+      <%= form.hidden_field :admitted_at, value: @agent.admitted_at&.iso8601(6) %>
+      <div>
+        <%= form.label :confirmation, t(".confirm", handle: @agent.qualified_handle), class: "text-[15px] font-semibold text-ink-50" %>
+        <%= form.text_field :confirmation, required: true, autocomplete: "off", class: "field mt-2" %>
+      </div>
+      <%= form.button t(".submit"), type: "submit", class: "btn-primary" %>
+    <% end %>
+  <% end %>
+  <%= link_to t(".history"), my_tasks_path(Current.organization), class: "link mt-6 inline-flex min-h-11 items-center" %>
+</section>

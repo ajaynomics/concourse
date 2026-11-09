@@ -1,0 +1,698 @@
+@import "tailwindcss";
+
+/* Concourse is a departures board for agent work, drawn in a warm
+ * family: Figtree, warm sand by day and deep slate by
+ * night. Agents are the gates, tasks the movements between them. The metaphor
+ * is visual only: every word on screen is A2A's (agent, task, message,
+ * artifact, and the eight task states), never "flight" or "gate".
+ *
+ * Two faces, both SIL OFL 1.1, served from self (the CSP allows no other font
+ * origin): Figtree for everything people read, and
+ * Geist Mono for the board, where every handle and id lines up in columns.
+ *
+ * The theme follows the device. Every colour below is a token whose value
+ * flips between light and dark, so a view names a role (ink-50 is the
+ * strongest text, ink-900 the page) and never a mode. */
+@font-face {
+  font-family: "Figtree";
+  src: url("figtree-latin-wght-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("geist-mono-latin-wght-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Light: sand and stone. Dark: slate, taken a step
+ * deeper. Text tones (200-400) of each accent darken by day so they keep
+ * AA contrast on sand; fills (500-600) stay as they are. */
+:root {
+  --ink-50: #1c1917;
+  --ink-100: #292524;
+  --ink-200: #44403c;
+  --ink-300: #57534e;
+  --ink-400: #6f6760;
+  --ink-500: #a29a93;
+  --ink-600: #d3c0b1;
+  --ink-700: #e5dad1;
+  --ink-800: #ffffff;
+  --ink-850: #fffdfb;
+  --ink-900: #f6f2ef;
+  --ink-950: #efe9e3;
+  --edge: #1c1917;
+  --control-edge: #968b82;
+
+  --sky-200: #1f4b89;
+  --sky-300: #1f58ae;
+  --sky-400: #1f6cd6;
+  --iris-300: #6d28d9;
+  --iris-400: #7c3aed;
+  --flare-300: #a21caf;
+  --flare-400: #c026d3;
+  --go-300: #047857;
+  --go-400: #059669;
+  --stop-200: #991b1b;
+  --stop-300: #b91c1c;
+  --stop-400: #dc2626;
+  --key-300: #b45309;
+  --key-400: #d97706;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink-50: #f8fafc;
+    --ink-100: #f1f5f9;
+    --ink-200: #e2e8f0;
+    --ink-300: #cbd5e1;
+    --ink-400: #94a3b8;
+    --ink-500: #64748b;
+    --ink-600: #334155;
+    --ink-700: #1e293b;
+    --ink-800: #172238;
+    --ink-850: #111a2c;
+    --ink-900: #0b1120;
+    --ink-950: #070b14;
+    --edge: #ffffff;
+    --control-edge: #64748b;
+
+    --sky-200: #c0e5fd;
+    --sky-300: #94d6fc;
+    --sky-400: #61bdf9;
+    --iris-300: #c4b5fd;
+    --iris-400: #a78bfa;
+    --flare-300: #f0abfc;
+    --flare-400: #e879f9;
+    --go-300: #6ee7b7;
+    --go-400: #34d399;
+    --stop-200: #fecaca;
+    --stop-300: #fca5a5;
+    --stop-400: #f87171;
+    --key-300: #fcd34d;
+    --key-400: #fbbf24;
+  }
+}
+
+@theme {
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --color-ink-50: var(--ink-50);
+  --color-ink-100: var(--ink-100);
+  --color-ink-200: var(--ink-200);
+  --color-ink-300: var(--ink-300);
+  --color-ink-400: var(--ink-400);
+  --color-ink-500: var(--ink-500);
+  --color-ink-600: var(--ink-600);
+  --color-ink-700: var(--ink-700);
+  --color-ink-800: var(--ink-800);
+  --color-ink-850: var(--ink-850);
+  --color-ink-900: var(--ink-900);
+  --color-ink-950: var(--ink-950);
+  /* Hairlines and hover washes: a dark line by day, a light one by night. */
+  --color-edge: var(--edge);
+
+  /* Sky signals tasks waiting on the viewer. The brand mark shares its
+   * signature colour, but navigation and general actions stay neutral. */
+  --color-sky-200: var(--sky-200);
+  --color-sky-300: var(--sky-300);
+  --color-sky-400: var(--sky-400);
+  --color-sky-500: #359cf4;
+  --color-sky-600: #2783e9;
+
+  /* Iris: the far end of a route, and work in motion. */
+  --color-iris-300: var(--iris-300);
+  --color-iris-400: var(--iris-400);
+  --color-iris-500: #8b5cf6;
+
+  /* Flare: a task waiting on a person's agent. Louder than anything else. */
+  --color-flare-300: var(--flare-300);
+  --color-flare-400: var(--flare-400);
+  --color-flare-500: #d946ef;
+
+  --color-go-300: var(--go-300);
+  --color-go-400: var(--go-400);
+  --color-stop-200: var(--stop-200);
+  --color-stop-300: var(--stop-300);
+  --color-stop-400: var(--stop-400);
+  --color-key-300: var(--key-300);
+  --color-key-400: var(--key-400);
+
+  --animate-arrive: arrive 420ms var(--ease-out-soft) both;
+  --animate-blink: blink 1.6s ease-in-out infinite;
+
+  @keyframes arrive {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+}
+
+/* Turbo Drive wraps visits in a view transition (the layout's
+ * view-transition meta). The header and the tab bar hold still; the page
+ * underneath fades up. Each task's lifeline carries its own name, so the
+ * glyph on a row grows into the task page's header. */
+::view-transition-old(root) {
+  animation: 140ms ease-out both vt-out;
+}
+
+::view-transition-new(root) {
+  animation: 240ms var(--ease-out-soft) both vt-in;
+}
+
+::view-transition-group(*) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out-soft);
+}
+
+@keyframes vt-out {
+  to { opacity: 0; }
+}
+
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+/* Actions remain neutral so only a task that needs you draws the eye in sky. */
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold transition-all duration-200 select-none active:scale-[0.97] disabled:opacity-50 [&_svg]:opacity-70 hover:[&_svg]:opacity-100;
+}
+
+/* Figtree 800 for the sentence that states the situation. */
+/* Titles are often an agent's words: a long link or path wraps instead of
+   widening the page. */
+@utility page-title {
+  @apply text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] wrap-break-word text-ink-50 sm:text-[2.75rem] sm:leading-[1.05];
+}
+
+/* Dotted underlines distinguish links without borrowing the task signal. */
+@utility link {
+  @apply font-semibold text-ink-50 underline decoration-edge/40 decoration-dotted decoration-2 underline-offset-4 transition-colors hover:decoration-edge hover:decoration-solid;
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: calc(6rem + env(safe-area-inset-top));
+    scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  body {
+    @apply bg-ink-900 font-sans text-[16px] leading-normal text-ink-200 antialiased;
+    font-optical-sizing: auto;
+  }
+
+  ::selection {
+    @apply bg-ink-50 text-ink-900;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-4 outline-ink-50;
+  }
+
+  [data-turbo-preview] main {
+    opacity: 0.7;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  button, summary, select {
+    touch-action: manipulation;
+  }
+
+  button:not(:disabled), select {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  #site_header { view-transition-name: site-header; }
+  #tab_bar { view-transition-name: tab-bar; }
+
+  .skip-link {
+    @apply sr-only rounded-full bg-ink-50 text-sm font-semibold text-ink-900 focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:min-h-11 focus:px-4 focus:py-3;
+  }
+
+  .account-menu {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  #main label.sticky {
+    top: calc(4rem + env(safe-area-inset-top));
+  }
+
+  .row:focus-visible, .tab:focus-visible, .filter:focus-visible, .nav-link:focus-visible {
+    outline-offset: -2px;
+  }
+
+  /* Type. Figtree at three weights: 400 to read, 600 to name, 800 to state
+   * the situation. No uppercase labels and no letter-spacing on small text. */
+
+  .page-lead {
+    @apply mt-3 max-w-[60ch] text-[17px] leading-relaxed text-pretty text-ink-300;
+  }
+
+  .section-title {
+    @apply flex flex-wrap items-baseline gap-2 text-[16px] font-semibold text-ink-50;
+  }
+
+  .section-title .count {
+    @apply font-normal text-ink-400 tabular-nums;
+  }
+
+  .meta {
+    @apply text-[13px] text-ink-400;
+  }
+
+  /* Lists are text on hairlines. No cards, no rails. */
+  .rows {
+    @apply divide-y divide-edge/[0.09] border-y border-edge/[0.09];
+  }
+
+  .row {
+    @apply relative block py-4 transition-colors hover:bg-edge/[0.03] focus-visible:bg-edge/[0.04] sm:px-3;
+  }
+
+  .row-title {
+    @apply line-clamp-2 text-[17px] leading-snug font-semibold text-ink-50;
+  }
+
+  .row-meta {
+    @apply mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-ink-400;
+  }
+
+  .row[aria-current="page"] {
+    @apply bg-edge/[0.04];
+  }
+
+  /* A thread of several tasks folds under one row. Inside, each task nests
+   * under the one that brought its caller in, on a hairline down the left:
+   * the same line the task page draws for the caller. */
+  .thread-summary {
+    @apply cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .thread-chevron {
+    @apply mt-0.5 size-5 shrink-0 text-ink-400 transition-transform duration-300;
+    transition-timing-function: var(--ease-out-soft);
+  }
+
+  .thread-fold[open] .thread-chevron {
+    @apply rotate-90 text-ink-200;
+  }
+
+  .thread-tree {
+    @apply mb-3 ml-1 border-l border-edge/[0.12] pl-3 sm:ml-4 sm:pl-4;
+  }
+
+  /* Past three levels the hairline still marks the nesting, but a phone's
+   * width goes to the words, not the indent. */
+  .thread-tree .thread-tree .thread-tree .thread-tree {
+    @apply ml-0 pl-2;
+  }
+
+  .thread-tree > li {
+    @apply border-t border-edge/[0.09];
+  }
+
+  .thread-tree .row {
+    @apply py-3;
+  }
+
+  .thread-tree .row-title {
+    @apply text-[15px];
+  }
+
+  /* An agent handle: owner/agent, the agent's name leading. */
+  .handle {
+    @apply font-semibold whitespace-nowrap;
+  }
+
+  .handle-owner {
+    @apply font-normal text-ink-400;
+  }
+
+  .handle-name {
+    @apply text-ink-100;
+  }
+
+  .handle-mine .handle-name {
+    @apply text-ink-50 underline decoration-edge/25 decoration-[1.5px] underline-offset-4;
+  }
+
+  .link-quiet {
+    @apply hover:[&_.handle-name]:underline hover:[&_.handle-name]:decoration-edge/40 hover:[&_.handle-name]:underline-offset-4;
+  }
+
+
+  /* The lifeline glyph. One stroke weight, 1.5px, everywhere. */
+  .lifeline {
+    @apply shrink-0 overflow-visible text-ink-400;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lifeline-line,
+  .lifeline-end {
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .lifeline-ball {
+    fill: var(--color-ink-50);
+    stroke: var(--color-ink-50);
+    stroke-width: 1.5;
+    transition: cx 220ms var(--ease-out-soft), fill 220ms;
+  }
+
+  .lifeline-ball-open {
+    fill: var(--color-ink-900);
+  }
+
+  .lifeline[data-state="TASK_STATE_COMPLETED"],
+  .lifeline[data-state="TASK_STATE_FAILED"],
+  .lifeline[data-state="TASK_STATE_CANCELED"],
+  .lifeline[data-state="TASK_STATE_REJECTED"] {
+    @apply text-ink-500;
+  }
+
+  .lifeline[data-move] .lifeline-ball {
+    fill: var(--color-sky-500);
+    stroke: var(--color-sky-500);
+  }
+
+  .lifeline[data-move] {
+    @apply text-sky-500;
+  }
+
+  /* The state, as A2A's word. */
+  .state {
+    @apply text-[13px] font-semibold whitespace-nowrap text-ink-300;
+  }
+
+  .state[data-move] {
+    @apply text-sky-400;
+  }
+
+  /* Filters: words, not chips. The current one is underlined. */
+  .filter {
+    @apply inline-flex min-h-11 shrink-0 items-center gap-1.5 border-b-2 border-transparent px-1 text-[15px] font-semibold text-ink-400 transition-colors hover:text-ink-100;
+  }
+
+  .filter[aria-current="page"] {
+    @apply border-ink-50 text-ink-50;
+  }
+
+  .filter-count {
+    @apply font-normal text-ink-400 tabular-nums;
+  }
+
+  /* Surfaces exist for things you fill in, and for objects (an artifact). */
+  .surface {
+    @apply rounded-[1.25rem] border border-edge/[0.09] bg-ink-850;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink-50 text-ink-900 hover:bg-ink-200;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-100 inset-ring-1 inset-ring-edge/15 hover:bg-edge/[0.05];
+  }
+
+  .btn-quiet {
+    @apply btn px-3 font-medium text-ink-300 hover:bg-edge/[0.05] hover:text-ink-50;
+  }
+
+  .btn-danger {
+    @apply btn px-3 font-medium text-stop-300 hover:bg-stop-400/10;
+  }
+
+  /* Controls need a visible boundary in both schemes, unlike list hairlines. */
+  .field {
+    @apply block w-full rounded-2xl border-2 bg-ink-800 px-4 py-3 text-[16px] text-ink-50 transition-colors placeholder:text-ink-400 focus:border-ink-50 focus:outline-2 focus:outline-offset-2 focus:outline-ink-50;
+    border-color: var(--control-edge);
+  }
+
+  textarea.field {
+    @apply min-h-[5.5rem] resize-y;
+  }
+
+  @supports (field-sizing: content) {
+    textarea.field {
+      field-sizing: content;
+      max-height: 18lh;
+    }
+  }
+
+  .composer {
+    @apply rounded-[1.5rem] border-2 bg-ink-800 p-2 shadow-[0_6px_20px_rgb(0_0_0/0.06)] transition-colors focus-within:border-ink-50;
+    border-color: var(--control-edge);
+  }
+
+  .composer textarea {
+    @apply block w-full resize-y bg-transparent px-3 py-2.5 text-[17px] font-medium text-ink-50 placeholder:text-ink-400 focus:outline-2 focus:outline-offset-[-2px] focus:outline-ink-50;
+    min-height: 3lh;
+  }
+
+  @supports (field-sizing: content) {
+    .composer textarea {
+      field-sizing: content;
+      max-height: 14lh;
+    }
+  }
+
+  /* The thread: the caller's line down the left edge, the recipient's down
+   * the right. Each message starts at its sender's line, where a dot marks
+   * it; an artifact is a square stop. */
+  .thread {
+    @apply relative space-y-7 py-2;
+  }
+
+  .thread::before,
+  .thread::after {
+    content: "";
+    @apply absolute inset-y-0 w-[1.5px] bg-edge/15;
+  }
+
+  .thread::before { left: 0; }
+  .thread::after { right: 0; }
+
+  .turn {
+    @apply relative min-w-0 w-fit max-w-[min(62ch,90%)];
+    overflow-wrap: anywhere;
+  }
+
+  .turn[data-side="caller"] {
+    @apply mr-auto pl-6;
+  }
+
+  .turn[data-side="recipient"] {
+    @apply ml-auto pr-6;
+  }
+
+  .turn::before {
+    content: "";
+    @apply absolute top-[0.4rem] size-[9px] rounded-full border-[1.5px] border-ink-50 bg-ink-900;
+  }
+
+  .turn[data-side="caller"]::before { left: -4px; }
+  .turn[data-side="recipient"]::before { right: -4px; }
+
+  .turn[data-status]::before {
+    @apply bg-ink-50;
+  }
+
+  .turn[data-kind="artifact"]::before {
+    @apply rounded-[2px] bg-ink-50;
+  }
+
+  .turn-head {
+    @apply flex flex-wrap items-baseline gap-x-2 text-[13px] text-ink-400;
+  }
+
+  .turn[data-side="recipient"] .turn-head {
+    @apply justify-end;
+  }
+
+  .turn-body {
+    @apply mt-1.5 text-[16px] leading-relaxed text-ink-100;
+  }
+
+  /* The badge claims Live only after the stream has subscribed. A short
+   * hidden interval avoids flashing Offline during every Turbo visit. */
+  .live {
+    @apply text-[13px] text-ink-400;
+    visibility: hidden;
+  }
+
+  .live-on,
+  .live-off {
+    @apply col-start-1 row-start-1 inline-flex items-center gap-1.5;
+  }
+
+  .live-on::before,
+  .live-off::before {
+    content: "";
+    @apply size-1.5 rounded-full;
+  }
+
+  .live-on::before {
+    @apply bg-go-400;
+  }
+
+  .live-off::before {
+    @apply bg-ink-500;
+  }
+
+  .live-on {
+    visibility: hidden;
+  }
+
+  body:has(turbo-cable-stream-source[connected]) .live,
+  body:has(turbo-cable-stream-source[connected]) .live-on {
+    visibility: visible;
+  }
+
+  body:has(turbo-cable-stream-source[connected]) .live-off {
+    visibility: hidden;
+  }
+
+  body:has(turbo-cable-stream-source):not(:has(turbo-cable-stream-source[connected])) .live,
+  body:has(turbo-cable-stream-source):not(:has(turbo-cable-stream-source[connected])) .live-off {
+    animation: live-lapse-show 0s 2s forwards;
+  }
+
+  @keyframes live-lapse-show {
+    to { visibility: visible; }
+  }
+
+  .tab {
+    @apply relative flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[12px] font-semibold text-ink-400 transition-colors hover:bg-edge/[0.03] hover:text-ink-50;
+  }
+
+  .tab[aria-current="page"] {
+    @apply text-ink-50;
+  }
+
+  .tab[aria-current="page"]::before {
+    content: "";
+    @apply absolute top-0 h-0.5 w-7 rounded-b-full bg-ink-50;
+  }
+
+  .tab svg {
+    @apply size-[22px];
+  }
+
+  .nav-link {
+    @apply inline-flex min-h-11 items-center border-b-2 border-transparent px-1 text-[15px] font-semibold text-ink-400 transition-colors hover:text-ink-100;
+  }
+
+  .nav-link[aria-current="page"] {
+    @apply border-ink-50 text-ink-50;
+  }
+
+  /* JOIN.md, rendered. */
+  .prose-concourse {
+    @apply max-w-[68ch] text-[16px] leading-7 text-ink-200;
+  }
+
+  .prose-concourse h1 { @apply page-title mb-6; }
+  .prose-concourse h2 { @apply mt-12 mb-3 scroll-mt-24 text-[22px] font-extrabold tracking-[-0.015em] text-ink-50; }
+  .prose-concourse h3 { @apply mt-8 mb-2 font-semibold text-ink-50; }
+  .prose-concourse p { @apply my-4 text-pretty; }
+  .prose-concourse a { @apply link font-medium; }
+  .prose-concourse strong { @apply font-semibold text-ink-50; }
+  .prose-concourse ul { @apply my-4 list-disc space-y-1.5 pl-5 marker:text-ink-400; }
+  .prose-concourse ol { @apply my-4 list-decimal space-y-1.5 pl-5 marker:text-ink-400; }
+  .prose-concourse code { @apply rounded-md bg-edge/[0.06] px-1.5 py-0.5 font-mono text-[0.85em] text-ink-50 [overflow-wrap:anywhere]; }
+  .prose-concourse pre { @apply relative my-5 overflow-x-auto rounded-2xl bg-ink-950 p-4 text-[13px] leading-6; }
+  .prose-concourse pre code { @apply bg-transparent p-0 text-ink-100 [overflow-wrap:normal]; }
+  .prose-concourse table { @apply my-6 block w-full overflow-x-auto text-[15px]; }
+  .prose-concourse th { @apply border-b border-edge/15 px-3 py-2 text-left font-semibold text-ink-50; }
+  .prose-concourse td { @apply border-b border-edge/[0.07] px-3 py-2 align-top; }
+  .prose-concourse blockquote { @apply my-5 border-l-2 border-edge/20 pl-4 text-ink-300; }
+  .prose-concourse hr { @apply my-10 border-edge/10; }
+}
+
+/* A thread unfolds rather than jumps: its height eases open to its content
+ * and its rows fade up. Browsers without ::details-content or
+ * interpolate-size open it at once, which is the same page. */
+@supports selector(::details-content) {
+  @media (prefers-reduced-motion: no-preference) {
+    .thread-fold {
+      interpolate-size: allow-keywords;
+    }
+
+    .thread-fold::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      transition: block-size 320ms var(--ease-out-soft), content-visibility 320ms allow-discrete;
+    }
+
+    .thread-fold[open]::details-content {
+      block-size: auto;
+    }
+
+    .thread-fold > .thread-tree {
+      transition: opacity 240ms var(--ease-out-soft), translate 320ms var(--ease-out-soft);
+    }
+
+    .thread-fold:not([open]) > .thread-tree {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+}
+
+@media (forced-colors: active) {
+  .lifeline[data-move] .lifeline-ball {
+    fill: Highlight;
+    stroke: Highlight;
+  }
+
+  .field, .composer, .btn-primary, .btn-ghost {
+    border: 1px solid ButtonText;
+  }
+
+  .tab[aria-current="page"]::before {
+    background: CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

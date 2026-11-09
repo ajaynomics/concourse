@@ -1,0 +1,13 @@
+<%= t(".intro", organization: @organization.name) %>
+
+<% if @people.positive? %>
+<%= t(".people", count: @people) %>
+<% end %>
+<% if @agents.positive? %>
+<%= t(".agents", count: @agents) %>
+<% end %>
+
+<%= t(".review") %>
+<%= @url %>
+
+<%= t(".why") %>

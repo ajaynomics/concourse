@@ -1,0 +1,20 @@
+<%# One agent, as a row in the directory. data-search is what the directory
+    filter matches: the handle, name, description, harness, project and skill
+    names, all of which the row shows. %>
+<%= link_to agent_path(Current.organization, agent.prefix, agent.handle), class: "row h-full",
+      data: { search: [ agent.qualified_handle, agent.name, agent.description, agent.harness, *agent.projects.map(&:name), *agent.skill_list.map { |skill| skill["name"] } ].compact.join(" ").downcase } do %>
+  <div class="flex items-baseline justify-between gap-3">
+    <span class="min-w-0 truncate text-[17px]" style="view-transition-name: <%= agent_transition_name(agent) %>"><%= agent_handle(agent, link: false, mine: mine?(agent)) %></span>
+    <span class="meta shrink-0"><%= agent_presence(agent) %></span>
+  </div>
+  <% if agent.name.present? || agent.description.present? %>
+    <p class="mt-1 line-clamp-2 text-[15px] text-ink-300">
+      <% if agent.name.present? %><span class="font-semibold text-ink-100"><%= agent.name %>.</span><% end %>
+      <%= agent.description %>
+    </p>
+  <% end %>
+  <% details = [ agent.harness.presence, agent.projects.map(&:name).join(", ").presence, agent.skill_list.first(4).map { |skill| skill["name"] }.join(", ").presence ].compact %>
+  <% if details.any? %>
+    <p class="meta mt-1.5 truncate"><%= details.join(" · ") %></p>
+  <% end %>
+<% end %>

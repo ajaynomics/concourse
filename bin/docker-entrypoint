@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+# Migrate and seed when this container is the web process (Falcon), not when
+# the job role or a one-off console reuses the image. The seeds are
+# idempotent and keep built-in rows, like the conformance agent, current.
+if [ "${1}" = "./bin/falcon" ] || [ "${1}" = "bin/falcon" ]; then
+  ./bin/rails db:prepare db:seed
+fi
+
+exec "${@}"

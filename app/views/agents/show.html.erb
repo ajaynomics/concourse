@@ -1,0 +1,97 @@
+<% content_for :title, @agent.qualified_handle %>
+<% endpoint = A2a::Card.endpoint_url(@agent) %>
+
+<%= link_to agents_path(Current.organization), class: "btn-quiet -ml-3 min-h-9 text-[13px]" do %><%= icon(:back, css: "size-4") %> <%= t("nav.agents") %><% end %>
+
+<header class="mt-4 max-w-3xl">
+  <h1 class="page-title break-all [&_.handle]:whitespace-normal" style="view-transition-name: <%= agent_transition_name(@agent) %>">
+    <%= agent_handle(@agent, link: false, mine: mine?(@agent)) %>
+  </h1>
+  <p class="meta mt-2">
+    <%= agent_presence(@agent) %>
+    <% if @agent.harness.present? %> · <%= @agent.harness %><% end %>
+    <% if @agent.name.present? %> · <span class="text-ink-200"><%= @agent.name %></span><% end %>
+  </p>
+  <% if @agent.description.present? %>
+    <p class="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-pretty text-ink-200"><%= @agent.description %></p>
+  <% end %>
+  <% if mine?(@agent) %>
+    <%= link_to edit_agent_path(Current.organization, @agent.prefix, @agent.handle), class: "btn-ghost mt-6 min-h-10 text-[14px]" do %>
+      <%= icon(:edit, css: "size-4") %> <%= t(".edit") %>
+    <% end %>
+  <% end %>
+  <% if Current.organization_owner? %>
+    <%= link_to t(".retire"), retirement_path(Current.organization, @agent.prefix, @agent.handle), class: "btn-quiet mt-6 min-h-10 text-[14px]" %>
+  <% end %>
+</header>
+
+<div class="mt-12 grid gap-x-14 gap-y-12 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <div class="min-w-0 space-y-12">
+    <%# Inbox: what waits on this agent, in the owner-side scope. For your own
+        agent that is its whole inbox; for anyone else's, only what your
+        agents sent. %>
+    <section aria-labelledby="inbox_title">
+      <h2 id="inbox_title" class="section-title mb-3"><%= mine?(@agent) ? t(".inbox") : t(".inbox_other") %></h2>
+      <% if @waiting.any? %>
+        <p class="mb-3 text-[15px] text-ink-300">
+          <%= t(".waiting", count: @waiting.size) %>
+          <%= t(".oldest", time: waited(@waiting.first.actionable_since)) %>
+        </p>
+        <%= render "tasks/board", tasks: @waiting, waiting: true %>
+      <% else %>
+        <p class="border-y border-edge/[0.09] py-6 text-[15px] text-ink-400"><%= t(".waiting", count: 0) %></p>
+      <% end %>
+    </section>
+
+    <section aria-labelledby="agent_tasks_title">
+      <h2 id="agent_tasks_title" class="section-title mb-3"><%= t(".tasks") %> <span class="count"><%= @tasks.size %></span></h2>
+      <%= render "tasks/board", tasks: @tasks, empty: t(".tasks_empty") %>
+    </section>
+  </div>
+
+  <aside class="min-w-0 space-y-10">
+    <% if @agent.projects.any? %>
+      <section aria-labelledby="projects_title">
+        <h2 id="projects_title" class="section-title mb-3"><%= t(".projects") %></h2>
+        <ul class="rows">
+          <% @agent.projects.each do |project| %>
+            <li><%= link_to project.name, agents_path(Current.organization, project: project.slug), class: "flex min-h-11 items-center text-[15px] font-semibold text-ink-50 hover:underline hover:underline-offset-4" %></li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+    <% if @agent.skill_list.any? %>
+      <section aria-labelledby="skills_title">
+        <h2 id="skills_title" class="section-title mb-3"><%= t(".skills") %></h2>
+        <ul class="rows">
+          <% @agent.skill_list.each do |skill| %>
+            <li class="py-3">
+              <p class="text-[15px] font-semibold text-ink-50"><%= skill["name"] %></p>
+              <% if skill["description"].present? %><p class="mt-0.5 text-[15px] text-ink-300"><%= skill["description"] %></p><% end %>
+              <% if Array(skill["tags"]).any? %><p class="meta mt-1"><%= Array(skill["tags"]).join(", ") %></p><% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
+    <section aria-labelledby="connect_title">
+      <h2 id="connect_title" class="section-title mb-3"><%= t(".connect") %></h2>
+      <p class="meta mb-3"><%= t(".connect_hint") %></p>
+      <div data-controller="clipboard" data-clipboard-text-value="<%= endpoint %>" data-clipboard-failed-value="<%= t(".copy_failed") %>">
+        <p class="meta"><%= t(".endpoint") %></p>
+        <div class="mt-1.5 flex items-center gap-2">
+          <code class="min-w-0 flex-1 break-all font-mono text-[13px] text-ink-100"><%= endpoint %></code>
+          <button type="button" class="btn-ghost min-h-9 shrink-0 px-3 text-[13px]" data-action="clipboard#copy" aria-live="polite" aria-atomic="true">
+            <span data-clipboard-target="idle" class="inline-flex items-center gap-1.5"><%= icon(:copy, css: "size-4") %> <%= t(".copy") %></span>
+            <span data-clipboard-target="done" hidden class="inline-flex items-center gap-1.5"><%= icon(:check, css: "size-4") %> <%= t(".copied") %></span>
+          </button>
+        </div>
+        <p data-clipboard-target="feedback" role="status" aria-live="polite" class="meta mt-2"></p>
+      </div>
+      <%= link_to "#{endpoint}/.well-known/agent-card.json", class: "link mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px]", target: "_blank", rel: "noopener", data: { turbo: false } do %>
+        <%= t(".card") %> <%= icon(:external, css: "size-4") %>
+      <% end %>
+    </section>
+  </aside>
+</div>
