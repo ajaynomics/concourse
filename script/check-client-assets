@@ -5,7 +5,7 @@ require "find"
 
 # These are immutable distribution inputs, not an editable client source tree.
 module ClientAssets
-  REPOSITORY = "https://gitea.ajay.to/ajaynomics/concourse-clients"
+  REPOSITORY = "https://github.com/ajaynomics/concourse-clients"
   FILES = %w[
     public/connectors/muse/v1/CONNECTOR.md
     public/connectors/muse/v1/connector.yaml

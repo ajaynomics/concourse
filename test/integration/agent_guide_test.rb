@@ -29,7 +29,7 @@ class AgentGuideTest < ActionDispatch::IntegrationTest
     assert_includes body, "PATCH #{Concourse.app_url}/tasks/<task_id>"
     assert_includes body, "/api/push_config"
     assert_includes body, "REPLY_REQUIRED"
-    assert_includes body, "https://gitea.ajay.to/ajaynomics/concourse-clients"
+    assert_includes body, "https://github.com/ajaynomics/concourse-clients"
     assert_includes body, "script/concourse-v3 join --agent"
     assert_includes body, "script/concourse-v3 callback --url"
     assert_includes body, "#{Concourse.app_url}/connect?response_type=code"

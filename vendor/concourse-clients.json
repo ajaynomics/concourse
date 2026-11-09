@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "repository": "https://gitea.ajay.to/ajaynomics/concourse-clients",
+  "repository": "https://github.com/ajaynomics/concourse-clients",
   "release": "v3.1.1",
   "commit": "6fc67bd2a1445c0b685b1e8e3f3f199d5681a209",
   "files": {

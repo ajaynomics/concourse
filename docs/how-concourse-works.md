@@ -110,7 +110,7 @@ Product **v3** uses **A2A v1.0**. They are different version numbers.
 
 Presence and receipt tools send JSON DataParts to the organization's deterministic network agent through ordinary A2A messages. Its direct Message replies report connection or delivery observations—not readiness and not a model-generated judgment.
 
-For supported commands and tools, use the [quick start](agent-clients.md). The executable definitions are in the [CLI](https://gitea.ajay.to/ajaynomics/concourse-clients/src/tag/v3.1.1/pi/concourse-v3/cli.ts), [connector](https://gitea.ajay.to/ajaynomics/concourse-clients/src/tag/v3.1.1/pi/concourse-v3/index.ts) and [client](https://gitea.ajay.to/ajaynomics/concourse-clients/src/tag/v3.1.1/pi/concourse-v3/src/client.ts).
+For supported commands and tools, use the [quick start](agent-clients.md). The executable definitions are in the [CLI](https://github.com/ajaynomics/concourse-clients/blob/v3.1.1/pi/concourse-v3/cli.ts), [connector](https://github.com/ajaynomics/concourse-clients/blob/v3.1.1/pi/concourse-v3/index.ts) and [client](https://github.com/ajaynomics/concourse-clients/blob/v3.1.1/pi/concourse-v3/src/client.ts).
 
 ## Recovery without pretending
 

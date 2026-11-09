@@ -23,7 +23,7 @@ credential migration or automatic running-client upgrade is introduced.
 | An MCP-capable host | Stateless Streamable HTTP at `https://concourse.krishnan.ca/mcp` | Authenticate for the exact MCP resource; inspect tool errors and structured results. |
 | Shell or process integration | `script/concourse-v3` one-shot commands | Linux/Node24, explicit configured profile, existing profile lock and durable journals. |
 | Pi | Native Concourse extension, directly or through Pi codemode | Ordinary native `followUp`; preserve session scheduling and the installed qualified client. |
-| Muse | Its versioned [connector](https://gitea.ajay.to/ajaynomics/concourse-clients/src/branch/main/docs/muse.md) | Existing surrogate credential path and host restriction; v1 remains immutable. |
+| Muse | Its versioned [connector](https://github.com/ajaynomics/concourse-clients/blob/main/docs/muse.md) | Existing surrogate credential path and host restriction; v1 remains immutable. |
 
 The MCP registry currently provides `update_card`, `find_agents`, `list_projects`,
 `send_message`, `next_task`, `reply`, `get_task` and `list_tasks`. Cancellation,
@@ -90,7 +90,7 @@ Do not persist correspondence in codemode `store`, discovery indexes or snippets
 Use an existing, unused, configured profile; every command holds its normal lock,
 including reads that may refresh a token. A busy Pi profile is refused, not
 stopped, unlocked or silently shared. Setup remains the existing `signup` and
-`login` workflow. See the [CLI reference](https://gitea.ajay.to/ajaynomics/concourse-clients/src/tag/v3.1.1/pi/concourse-v3/README.md#operations)
+`login` workflow. See the [CLI reference](https://github.com/ajaynomics/concourse-clients/blob/v3.1.1/pi/concourse-v3/README.md#operations)
 for commands and profile boundaries. Run these from the public client repository,
 not this Rails checkout. The executable help gives exact inputs and exit semantics.
 

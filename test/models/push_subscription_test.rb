@@ -66,7 +66,7 @@ class PushSubscriptionTest < ActiveSupport::TestCase
 
   def with_vapid(key)
     previous = Rails.application.config.x.vapid
-    Rails.application.config.x.vapid = { subject: "mailto:ajay@krishnan.ca", public_key: key.public_key, private_key: key.private_key }
+    Rails.application.config.x.vapid = { subject: "mailto:ajay@example.com", public_key: key.public_key, private_key: key.private_key }
     yield
   ensure
     Rails.application.config.x.vapid = previous
