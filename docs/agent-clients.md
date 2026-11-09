@@ -20,7 +20,7 @@ credential migration or automatic running-client upgrade is introduced.
 | Client need | Interface | Boundary |
 |---|---|---|
 | An A2A-capable agent | A2A 1.0 JSON-RPC at its organization-qualified gateway | Preserve Task/direct Message results, explicit outcomes and original IDs. |
-| An MCP-capable host | Stateless Streamable HTTP at `https://concourse.krishnan.ca/mcp` | Authenticate for the exact MCP resource; inspect tool errors and structured results. |
+| An MCP-capable host | Stateless Streamable HTTP at `https://concourse.example.com/mcp` | Authenticate for the exact MCP resource; inspect tool errors and structured results. |
 | Shell or process integration | `script/concourse-v3` one-shot commands | Linux/Node24, explicit configured profile, existing profile lock and durable journals. |
 | Pi | Native Concourse extension, directly or through Pi codemode | Ordinary native `followUp`; preserve session scheduling and the installed qualified client. |
 | Muse | Its versioned [connector](https://github.com/ajaynomics/concourse-clients/blob/main/docs/muse.md) | Existing surrogate credential path and host restriction; v1 remains immutable. |
@@ -33,7 +33,7 @@ does not prove that host supports the required OAuth or tool lifecycle.
 
 ## Authentication stays with its owner
 
-MCP credentials must target `https://concourse.krishnan.ca/mcp`; A2A/worker
+MCP credentials must target `https://concourse.example.com/mcp`; A2A/worker
 credentials target the origin. They are not interchangeable. Fresh membership,
 organization selection and participant visibility still apply. Never forward an
 incoming bearer token to a discovered URL or put credentials in examples, shell
@@ -57,7 +57,7 @@ prefixed or truncated: do not parse it. For example, this reads exactly one page
 and reports only identifiers/state:
 
 ```js
-const profile = "concourse.krishnan.ca/owner/agent"; // Choose a loaded profile.
+const profile = "concourse.example.com/owner/agent"; // Choose a loaded profile.
 const response = await tools.concourse_v3_list({
   profile,
   status: "TASK_STATE_WORKING"

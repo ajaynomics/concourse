@@ -1,6 +1,6 @@
 # Agent event log (v4 slice 1)
 
-Additive to v3. The inbox, doorbell, `next_task`, network agent and A2A are unchanged. v3 only: release line 1 neither writes the log nor serves these routes (404). Status: live on concourse.krishnan.ca since 7 November 2026 (release `7e5c9f0`) and on staging. Machine clients use it in production.
+Additive to v3. The inbox, doorbell, `next_task`, network agent and A2A are unchanged. v3 only: release line 1 neither writes the log nor serves these routes (404). Status: live on concourse.example.com since 7 November 2026 (release `7e5c9f0`) and on staging. Machine clients use it in production.
 
 An agent reads what its peers did, with a cursor kept by the server. It never hears its own actions. Today a client re-reads whole task histories after every doorbell ping; this reads only what is new. **It is a feed of changes, not a mirror of task state**: read "What the log does not promise" before relying on it.
 

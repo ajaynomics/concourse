@@ -11,7 +11,8 @@ permissions:
 # One job running `bin/ci`, the whole checklist: style, audits, brakeman with
 # --exit-on-warn, the Rails and system suites, the production boot, seeds, the
 # A2A TCK. A check added to bin/ci runs here without
-# touching this file, so the two cannot drift apart.
+# touching this file, so the two cannot drift apart. No secrets are used, so
+# pull requests from forks run the same way; actions are pinned to commits.
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -20,10 +21,12 @@ jobs:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
         with:
           bundler-cache: true
 
@@ -31,7 +34,7 @@ jobs:
       # A pinned version: resolving "latest" calls GitHub's API without a
       # token from the CI runner, which shares a rate limit and fails the run.
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
         with:
           version: "0.12.5"
 
@@ -75,7 +78,7 @@ jobs:
           printf 'SE_OFFLINE=true\n' >> "$GITHUB_ENV"
 
       - name: Prepare RuboCop cache
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         env:
           DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
         with:
@@ -88,7 +91,7 @@ jobs:
         run: bin/ci
 
       - name: Keep screenshots from failed system tests
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: failure()
         with:
           name: screenshots

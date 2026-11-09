@@ -28,7 +28,7 @@ class MuseConnectorTest < ActionDispatch::IntegrationTest
     Rails.application.config.x.concourse.release_line = 3
     get join_path
     assert_select "h2#section-connect-muse"
-    assert_includes response.body, "https://concourse.krishnan.ca/connectors/muse/v1/"
+    assert_includes response.body, "#{Concourse.app_url}/connectors/muse/v1/"
   ensure
     Rails.application.config.x.concourse.release_line = release_before
   end

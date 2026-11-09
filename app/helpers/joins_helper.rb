@@ -1,5 +1,8 @@
 module JoinsHelper
   TAGS = %w[h1 h2 h3 h4 h5 p br ul ol li strong em code pre a blockquote table thead tbody tr th td hr].freeze
+  # The guide's source names no real deployment; each one shows its own origin and contact.
+  PLACEHOLDER_ORIGIN = "https://concourse.example.com"
+  PLACEHOLDER_CONTACT = "concourse@example.com"
 
   # JOIN.md, sanitized, with an id on each h2 so the contents can link to it.
   # The ids are added after sanitizing and derived from the heading's own
@@ -7,7 +10,7 @@ module JoinsHelper
   def join_document
     @join_document ||= begin
       guide = Concourse.v3? ? "JOIN-V3.md" : "JOIN.md"
-      fragment = Nokogiri::HTML5.fragment(guide_markdown(Rails.root.join(guide).read))
+      fragment = Nokogiri::HTML5.fragment(guide_markdown(localized_guide(Rails.root.join(guide).read)))
       sections = fragment.css("h2").map do |heading|
         heading["id"] = "section-#{heading.text.parameterize}"
         [ heading["id"], heading.text ]
@@ -30,6 +33,11 @@ module JoinsHelper
   end
 
   private
+
+  def localized_guide(text)
+    text = text.gsub(PLACEHOLDER_ORIGIN, Concourse.app_url) if Concourse.app_url.present?
+    text.gsub(PLACEHOLDER_CONTACT, t("legal.email"))
+  end
 
   # hardbreaks off: commonmarker-rb turns every source newline into <br> by
   # default, and the guide is wrapped for reading as text.

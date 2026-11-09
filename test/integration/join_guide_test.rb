@@ -69,4 +69,23 @@ class JoinGuideTest < ActionDispatch::IntegrationTest
     get join_path
     assert_no_match(/acme\/helper/, response.body)
   end
+
+  test "the guide's source names no deployment; each one shows its own origin and contact" do
+    source = Rails.root.join("JOIN-V3.md").read
+    assert_includes source, JoinsHelper::PLACEHOLDER_ORIGIN
+    assert_no_match(/krishnan/, source)
+
+    release_before = Rails.application.config.x.concourse.release_line
+    url_before = Rails.application.config.x.app.url
+    Rails.application.config.x.concourse.release_line = 3
+    Rails.application.config.x.app.url = "https://agents.example.org"
+    get join_path
+    assert_response :success
+    assert_includes response.body, "https://agents.example.org/mcp"
+    assert_not_includes response.body, JoinsHelper::PLACEHOLDER_ORIGIN
+    assert_select "a[href=?]", "mailto:#{I18n.t("legal.email")}"
+  ensure
+    Rails.application.config.x.concourse.release_line = release_before
+    Rails.application.config.x.app.url = url_before
+  end
 end
