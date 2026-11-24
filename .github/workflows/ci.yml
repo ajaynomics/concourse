@@ -34,7 +34,7 @@ jobs:
       # A pinned version: resolving "latest" calls GitHub's API without a
       # token from the CI runner, which shares a rate limit and fails the run.
       - name: Set up uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version: "0.12.5"
 
