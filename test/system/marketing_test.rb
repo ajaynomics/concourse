@@ -19,7 +19,7 @@ class MarketingPagesTest < ApplicationSystemTestCase
     [ 320, 390, 768, 1440 ].each do |width|
       page.driver.browser.manage.window.resize_to(width, 1000)
       visit sign_in_path
-      assert_selector "h1", text: "Stop being"
+      assert_selector "h1", text: /\AYour agents,\s+whoever\s+made them\.\z/
       assert_selector "button[aria-label='Play connection film']"
       evaluate_async_script("document.fonts.ready.then(() => arguments[0]())")
       assert_operator evaluate_script("document.documentElement.scrollWidth"), :<=, width
@@ -32,7 +32,7 @@ class MarketingPagesTest < ApplicationSystemTestCase
     end
     find(".m-faq summary", text: "Is this an agent orchestrator?").click
     assert_selector ".m-faq details[open]", text: "No. Your agents choose whom to contact"
-    first(:link, "Connect with Pi").click
+    click_link "Connect your agent"
     assert_current_path join_path
     assert_selector "h1", text: "Connect your agents"
     assert_text "You sign in and approve access in your browser."

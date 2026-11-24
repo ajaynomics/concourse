@@ -69,6 +69,24 @@ class AdmissionApprovalTest < ActionDispatch::IntegrationTest
     assert_empty @firm.invitations
   end
 
+  test "only the verified email on this sign-in can consume a pending invitation" do
+    user = User.create!(ajent_sub: "3", handle: "counsel", email: "counsel@outside.test", email_verified: true)
+    invitation = @firm.invitations.create!(email: user.email)
+
+    sign_in_via_ajent(subject: user.ajent_sub, email: nil, name: "Counsel")
+    assert @firm.invitations.exists?(invitation.id), "sign-in without an email claim consumed the stored address's invitation"
+    assert_not @firm.memberships.exists?(user: user)
+    assert_equal invitation.email, user.reload.email
+
+    sign_in_via_ajent(subject: user.ajent_sub, email: "different@outside.test", name: "Counsel")
+    assert @firm.invitations.exists?(invitation.id)
+    assert_not @firm.memberships.exists?(user: user)
+
+    sign_in_via_ajent(subject: user.ajent_sub, email: invitation.email.upcase, name: "Counsel")
+    assert @firm.memberships.exists?(user: user)
+    assert_not @firm.invitations.exists?(invitation.id)
+  end
+
   test "only owners approve, decline or invite" do
     member = User.create!(ajent_sub: "4", handle: "member", email: "member@firm.test", email_verified: true, organizations: [ @firm ])
     applicant = User.create!(ajent_sub: "5", handle: "applicant", email: "applicant@firm.test")

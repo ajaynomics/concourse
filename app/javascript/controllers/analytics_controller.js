@@ -34,7 +34,8 @@ export default class extends Controller {
 // Custom events. Names are snake_case and properties never carry content.
 export function trackEvent(name, properties = {}) {
   try {
-    window.rybbit?.event(name, properties)
+    // The v3 public script counts page views only; custom Rybbit events are legacy.
+    if (document.body.matches('[data-controller~="analytics"]')) window.rybbit?.event(name, properties)
     window.ahoy?.track(name, properties)
   } catch {
     // Analytics must never be the reason a click stops working.

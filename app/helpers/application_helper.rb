@@ -15,7 +15,19 @@ module ApplicationHelper
   end
 
   def analytics_site_id
-    Concourse.config(:analytics, :site_id)
+    Concourse.config(:analytics, :site_id) if Concourse.config(:analytics, :host).present?
+  end
+
+  def public_analytics_page?
+    return false if signed_in? || !Concourse::NoIndex::PUBLIC_PATHS.include?(request.path) || request.query_string.present?
+    return true if request.referer.blank?
+
+    # The script sends document.referrer, independently of its query-string setting.
+    referrer = URI.parse(request.referer)
+    referrer.is_a?(URI::HTTP) && referrer.host.present? && !referrer.userinfo && !referrer.query && !referrer.fragment &&
+      (referrer.path.in?([ "", "/" ]) || (referrer.origin == request.base_url && Concourse::NoIndex::PUBLIC_PATHS.include?(referrer.path)))
+  rescue URI::InvalidURIError
+    false
   end
 
   def nav_link(label, path, active: current_page?(path), **options)

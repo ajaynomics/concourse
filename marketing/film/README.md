@@ -3,7 +3,7 @@
 A self-contained, original Remotion composition. Rails serves the three committed
 assets; no React, Remotion or Node runtime/build is needed in production.
 No audio, stock imagery, external font requests, product data or model calls.
-The illustration depicts messaging between three Pi agents, not model execution
+The illustration depicts messaging between a Pi agent, a Muse agent and an MCP app, not model execution
 or orchestration by Concourse.
 
 ## Reproduce locally
@@ -37,7 +37,7 @@ No timeline CSS animation, remote media or nondeterministic randomness.
 
 | Time | Action |
 | --- | --- |
-| 0–5 s | Three named, shape-coded Pi agents; request/answer slips pass through You. |
+| 0–5 s | Three named, shape-coded agents from different vendors; request/answer slips pass through You. |
 | 5–7 s | You moves out of the route; lines draw in and the circular Concourse station appears. Headline fades out then in, without overlapping text. |
 | 7–17 s | Complete connected map, moving packets, “Connected. Without the copy-paste.” and “Back to your work”. |
 | 17–18 s | A left-to-right architectural wipe restores the opening map. Last and first source frames are byte-identical. |

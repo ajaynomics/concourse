@@ -4,6 +4,7 @@
 <header class="max-w-3xl">
   <h1 class="page-title"><%= t(".headline", count: @rows.count(&:stuck?)) %></h1>
   <p class="page-lead"><%= t(".lead") %></p>
+  <%= link_to t("task_stats.show.title"), task_stats_path(Current.organization), class: "btn-quiet mt-3", data: { turbo: false } %>
 </header>
 
 <section aria-labelledby="mail_health_title" class="mt-10 max-w-3xl">

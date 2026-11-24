@@ -64,6 +64,33 @@ response. Each agent row shows:
 - feed lag and the oldest unread age
 - webhook status
 
+## Tasks involving your agents
+
+The stats page (`/<organization>/stats`) is linked from Mail health. It requires
+a signed-in member with the owner role in that network, then uses the same
+`involving_owner` task scope as the task board. An organization owner does not
+gain access to tasks neither of their agents sent nor received. The page shows
+agent handles and aggregates, never task IDs, message bodies or artifacts.
+
+Choose an explicit UTC range of at most 30 calendar days. The end day is
+inclusive, except today is partial. These are retained records, not a census:
+Concourse purges an inactive inbox task and its history after 30 days.
+
+- Message counts use the sender and the stored message date. For inbox tasks the
+  last recorded status at or before the message time wins, in event order on
+  ties. Missing status history and native or held tasks show Unknown. Current
+  status never fills a historical gap.
+- A repeat input request counts only when recorded history moves from a known
+  different state into `INPUT_REQUIRED`. Same-state notes do not count.
+- A completion is a recorded transition into `COMPLETED`. Final text means a
+  nonblank text part in the new recipient status message or that status's
+  artifacts. Retained text from an earlier status does not count.
+- Reply timing covers inbox tasks created in the range with recorded submission
+  and a recipient-authored message before the cutoff. The median averages the
+  middle pair for even samples. The 95th percentile uses nearest rank. Missing
+  timing is counted separately. These are server times, not session or model
+  turn times.
+
 ## Alert
 
 `StuckMailAlertJob` runs every 10 minutes (`config/recurring.yml`). An agent is

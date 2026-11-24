@@ -40,26 +40,38 @@ class CiConfigurationTest < Minitest::Test
   end
 
   def test_browser_resolution_failure_keeps_diagnostics_and_exit_status
-    prepare_browser(exit_status: 65) do |output, error, status, environment, calls, _browser|
+    prepare_browser(exit_status: 65) do |output, error, status, environment, calls|
       assert_equal 65, status.exitstatus
       assert_includes output + error, "synthetic driver download failure"
       assert_empty environment
-      assert_equal 1, calls
+      assert_equal 1, calls.size
     end
   end
 
-  def test_successful_browser_resolution_exports_the_resolved_browser
-    prepare_browser(exit_status: 0) do |_output, error, status, environment, calls, browser|
-      assert status.success?, error
+  def test_browser_setup_exports_and_reports_the_exact_resolved_pair
+    prepare_browser do |output, error, status, environment, calls, browser, driver|
+      assert status.success?, output + error
+      assert_equal [ %w[--browser chrome --browser-version 157.0.8103.78 --driver-version 157.0.8103.78 --force-browser-download --skip-driver-in-path --language-binding ruby --output json] ], calls
       assert_includes environment, "CHROME_BIN=#{browser}\n"
+      assert_includes environment, "SE_CHROMEDRIVER=#{driver}\n"
       assert_includes environment, "SE_OFFLINE=true\n"
-      assert_equal 1, calls
+      assert_includes output, "Chrome for Testing and chromedriver: 157.0.8103.78"
+    end
+  end
+
+  def test_browser_setup_rejects_an_unpinned_browser_or_driver
+    [ { browser_version: "158.0.8117.12" }, { driver_version: "157.0.8103.77" } ].each do |versions|
+      prepare_browser(**versions) do |_output, _error, status, environment, calls|
+        refute status.success?, versions.inspect
+        assert_empty environment
+        assert_equal 1, calls.size
+      end
     end
   end
 
   private
 
-  def prepare_browser(exit_status:)
+  def prepare_browser(exit_status: 0, browser_version: "157.0.8103.78", driver_version: "157.0.8103.78")
     workflow = YAML.load_file(File.expand_path("../.github/workflows/ci.yml", __dir__))
     script = workflow.fetch("jobs").fetch("ci").fetch("steps").find { |step| step["name"] == "Prepare browser driver" }.fetch("run")
     Dir.mktmpdir("concourse-browser-setup") do |dir|
@@ -67,20 +79,23 @@ class CiConfigurationTest < Minitest::Test
       gem_dir = File.join(dir, "gem")
       FileUtils.mkdir_p([ bin, File.join(gem_dir, "bin/linux") ])
       browser = File.join(bin, "synthetic-browser")
-      File.write(browser, "#!/bin/sh\nexit 0\n")
-      File.chmod(0o755, browser)
+      driver = File.join(bin, "synthetic-driver")
+      File.write(browser, "#!/bin/sh\nprintf 'Google Chrome for Testing %s \\n' #{Shellwords.escape(browser_version)}\n")
+      File.write(driver, "#!/bin/sh\nprintf 'ChromeDriver %s (synthetic)\\n' #{Shellwords.escape(driver_version)}\n")
+      File.chmod(0o755, browser, driver)
       File.write(File.join(bin, "bundle"), "#!/bin/sh\nprintf '%s\\n' #{Shellwords.escape(gem_dir)}\n")
       File.chmod(0o755, File.join(bin, "bundle"))
       manager = File.join(gem_dir, "bin/linux/selenium-manager")
-      File.write(manager, "#!/bin/sh\nprintf 'called\\n' >> \"$MANAGER_CALLS\"\nprintf '%s\\n' \"$MANAGER_JSON\"\nexit \"$MANAGER_EXIT\"\n")
+      File.write(manager, "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$MANAGER_CALLS\"\nprintf '%s\\n' \"$MANAGER_JSON\"\nexit \"$MANAGER_EXIT\"\n")
       File.chmod(0o755, manager)
       env_file = File.join(dir, "environment")
       calls_file = File.join(dir, "calls")
       env = { "PATH" => "#{bin}:#{ENV.fetch('PATH')}", "GITHUB_ENV" => env_file,
         "MANAGER_CALLS" => calls_file, "MANAGER_EXIT" => exit_status.to_s,
-        "MANAGER_JSON" => JSON.generate(logs: [ { message: "synthetic driver download failure" } ], result: { browser_path: browser }) }
+        "MANAGER_JSON" => JSON.generate(logs: [ { message: "synthetic driver download failure" } ], result: { browser_path: browser, driver_path: driver }) }
       output, error, status = Open3.capture3(env, "bash", "-c", script, chdir: dir)
-      yield output, error, status, File.exist?(env_file) ? File.read(env_file) : "", File.readlines(calls_file).size, browser
+      calls = File.readlines(calls_file).map { |line| Shellwords.split(line) }
+      yield output, error, status, File.exist?(env_file) ? File.read(env_file) : "", calls, browser, driver
     end
   end
 end

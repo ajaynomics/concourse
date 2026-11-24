@@ -31,19 +31,64 @@ class A2a::MailboxByteBudgetTest < ActiveSupport::TestCase
     assert_preflight_blocks(oversized)
   end
 
-  test "accumulated individually small history is preflighted as one task" do
+  test "accumulated individually small history delivers its newest messages, marked as a tail" do
     oversized = mail("first")
-    65.times { add_message(oversized, "x" * 6000) }
+    65.times { |i| add_message(oversized, "#{i} " + "x" * 6000) }
+    add_message(oversized, "newest")
+    page = readonly_page([ oversized, mail("later") ])
+    assert_empty page.fetch("blockedTasks")
+    assert_equal [ oversized.id ], page.fetch("tasks").first(1).pluck("id")
+    tail = page.fetch("tasks").first
+    texts = tail.fetch("history").map { |m| m.dig("parts", 0, "text") }
+    assert_equal "newest", texts.last
+    assert_operator texts.size, :<, 67
+    assert_operator texts.size, :>=, 2
+    assert_equal({ "truncated" => true, "returned" => texts.size, "total" => 67 }, tail.dig("metadata", "concourse.history"))
+    assert_equal 2, page.fetch("tasks").size
+    assert_bounded(page)
+  end
+
+  test "a reply on a task the recipient received as a tail reaches the sender, whose view is complete and unmarked" do
+    record = mail("first")
+    65.times { |i| add_message(record, "#{i} " + "x" * 6000) }
+    tail = readonly_page([ record ]).fetch("tasks").sole
+    assert_equal true, tail.dig("metadata", "concourse.history", "truncated")
+
+    answer = Message.record!(task: record, sender: @recipient, role: "ROLE_AGENT", parts: [ { "text" => "answer from the tail" } ])
+    record.transition_to!("TASK_STATE_COMPLETED", by: @recipient, status_message: answer)
+
+    seen = A2a::Exchange.get_task(viewer: @caller, id: record.id)
+    texts = seen.fetch("history").map { |m| m.dig("parts", 0, "text") }
+    assert_equal 67, texts.size, "the sender sees every message"
+    assert_equal "first", texts.first
+    assert_equal "answer from the tail", texts.last
+    assert_equal "TASK_STATE_COMPLETED", seen.dig("status", "state")
+    assert_equal "answer from the tail", seen.dig("status", "message", "parts", 0, "text")
+    assert_nil seen.dig("metadata", "concourse.history"), "only the recipient's inbox page is ever a tail"
+    assert_not_includes ActiveSupport::JSON.encode(A2a::Exchange.list_tasks(viewer: @caller)), "concourse.history"
+  end
+
+  test "a Task that fits is never marked as a tail" do
+    page = readonly_page([ mail("small") ])
+    assert_nil page.dig("tasks", 0, "metadata", "concourse.history")
+  end
+
+  test "a newest message that alone is over the limit stays blocked" do
+    oversized = mail("first")
+    add_message(oversized, "x" * (TASK_LIMIT + 1))
     assert_preflight_blocks(oversized)
   end
 
-  test "preflight includes conservative fixed overhead for each small history record" do
+  test "the tail counts the fixed overhead of each small history record" do
     oversized = mail("x" * 3830)
     99.times { add_message(oversized, "x" * 3830) }
     stored_bytes = oversized.messages.sum(Arel.sql("LENGTH(CAST(parts AS BLOB)) + LENGTH(CAST(metadata AS BLOB)) + LENGTH(CAST(extensions AS BLOB)) + LENGTH(CAST(reference_task_ids AS BLOB))"))
     assert_operator stored_bytes, :<, TASK_LIMIT
     assert_operator stored_bytes + oversized.messages.count * 128, :>, TASK_LIMIT
-    assert_preflight_blocks(oversized)
+    page = readonly_page([ oversized ])
+    assert_empty page.fetch("blockedTasks")
+    assert_operator page.dig("tasks", 0, "history").size, :<, 100
+    assert_bounded(page)
   end
 
   test "preflight accounts for every persisted variable content column without loading content" do

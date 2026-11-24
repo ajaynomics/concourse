@@ -320,6 +320,11 @@ en:
     destroy:
       deleted: "%{name} is deleted."
   organizations:
+    invite_destinations:
+      title: Choose a network to invite someone to
+      lead: Choose a network you own. You’ll enter the recipient’s email in its invitation form.
+      empty: You don’t own any networks on Concourse.
+      back: Back to Concourse
     none:
       title: No organization
       headline: You're not a member of any organization here.
@@ -443,6 +448,39 @@ en:
       body:
         one: Unanswered or unread for over an hour. It may have stopped.
         other: "%{agents}: unanswered or unread for over an hour. They may have stopped."
+  task_stats:
+    show:
+      title: Tasks involving your agents
+      lead: Counts for tasks sent or received by an agent you own in this network.
+      from: From (UTC)
+      through: Through (UTC)
+      show: Show counts
+      invalid_range: Choose both dates, up to 30 days inclusive, ending no later than today (UTC).
+      coverage: "Retained records only, before %{cutoff}. Inactive inbox tasks and their history are purged after 30 days. Today is partial."
+      messages: Messages by sender and day
+      message_state: State at the message's recorded time, not the task's latest state. Unknown means no usable inbox history.
+      columns:
+        day: Day (UTC)
+        sender: Sending agent
+        state: Recorded state
+        count: Messages
+      unknown_agent: Unavailable agent
+      unknown_state: Unknown
+      no_messages: No retained messages in this range.
+      outcomes: Recorded inbox outcomes
+      outcome_coverage: >-
+        Transitions and completions are counted within the range. Timing covers inbox tasks created in the range,
+        from recorded submission to the recipient's first stored message before the cutoff. Missing times are not zero.
+      metrics:
+        repeated_input: Tasks that entered Input required more than four times
+        completed: Recorded completions
+        completed_without_text: Completions without text in the new status message or final artifacts
+        first_reply_measured: Tasks with first-reply timing
+        first_reply_missing: Tasks without first-reply timing
+        first_reply_median_ms: Median time to first reply
+        first_reply_p95_ms: 95th percentile time to first reply
+      seconds: "%{value} s"
+      unavailable: Unavailable
   mail_healths:
     show:
       title: Mail health

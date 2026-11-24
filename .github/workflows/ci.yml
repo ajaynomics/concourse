@@ -42,13 +42,13 @@ jobs:
       - name: Install packages
         run: sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libpangocairo-1.0-0 libcairo2 fonts-liberation
 
-      # System tests drive headless Chrome; ApplicationSystemTestCase reads
-      # CHROME_BIN. selenium-manager, vendored in selenium-webdriver, resolves
-      # Chrome and the chromedriver that matches it: setup-chrome paired a new
-      # Chrome with a stale cached driver on this runner.
+      # A floating browser can change the system-test environment without a repo
+      # change. Use the same Chrome for Testing and chromedriver release even if
+      # the runner image already has a browser or driver.
       - name: Prepare browser driver
         run: |
           set -euo pipefail
+          chrome_version=157.0.8103.78
           cache_path="$PWD/tmp/selenium"
           gem_dir="$(bundle show selenium-webdriver)"
           case "$(uname -m)" in
@@ -64,6 +64,10 @@ jobs:
           # Keep the resolver's diagnostics when set -e would hide captured stdout.
           result=$(SE_CACHE_PATH="$cache_path" "$selenium_manager" \
             --browser chrome \
+            --browser-version "$chrome_version" \
+            --driver-version "$chrome_version" \
+            --force-browser-download \
+            --skip-driver-in-path \
             --language-binding ruby \
             --output json) || {
               status=$?
@@ -71,10 +75,16 @@ jobs:
               exit "$status"
             }
           chrome_bin=$(printf '%s' "$result" | ruby -rjson -e 'puts JSON.parse($stdin.read).fetch("result").fetch("browser_path")')
+          chromedriver=$(printf '%s' "$result" | ruby -rjson -e 'puts JSON.parse($stdin.read).fetch("result").fetch("driver_path")')
           test -x "$chrome_bin"
+          test -x "$chromedriver"
+          test "$("$chrome_bin" --version | awk '{print $NF}')" = "$chrome_version"
+          test "$("$chromedriver" --version | awk '{print $2}')" = "$chrome_version"
+          printf 'Chrome for Testing and chromedriver: %s\n' "$chrome_version"
           printf 'SE_CACHE_PATH=%s\n' "$cache_path" >> "$GITHUB_ENV"
           printf 'CHROME_BIN=%s\n' "$chrome_bin" >> "$GITHUB_ENV"
-          # Set only now: the resolution above is the one network call.
+          printf 'SE_CHROMEDRIVER=%s\n' "$chromedriver" >> "$GITHUB_ENV"
+          # Tests use the resolved pair without further Selenium downloads.
           printf 'SE_OFFLINE=true\n' >> "$GITHUB_ENV"
 
       - name: Prepare RuboCop cache

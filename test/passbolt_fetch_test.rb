@@ -44,6 +44,68 @@ class PassboltFetchTest < ActiveSupport::TestCase
     end
   end
 
+  test "a resource named by its exact name, for an entry shared by name" do
+    named = ROWS + [ { id: "44444444-4444-4444-4444-444444444444", name: "Example production /connect issuer client",
+      username: "client-id", password: "client-secret", description: "" } ]
+    with_fake_passbolt(named) do |dir, env|
+      secrets = parse(dir, env, <<~SECRETS)
+        PASSBOLT=$(#{HELPER} "ID=@Example production /connect issuer client:username" "SECRET=@Example production /connect issuer client:password" PW=#{A})
+        ID=$(kamal secrets extract ID $PASSBOLT)
+        SECRET=$(kamal secrets extract SECRET $PASSBOLT)
+        PW=$(kamal secrets extract PW $PASSBOLT)
+      SECRETS
+
+      assert_equal [ "client-id", "client-secret", %q(p@ss w'rd "q" \\ ;|&) ], secrets.values_at("ID", "SECRET", "PW")
+      calls = File.readlines(File.join(dir, "calls"))
+      assert_equal 1, calls.size, "one sign-in for the whole file"
+      assert_includes calls.first, %(ID == "#{A}" || Name == "Example production /connect issuer client")
+    end
+
+    with_fake_passbolt(named) do |_, env|
+      { [ "X=@Name with \"quote" ] => /bad argument for X/, [ "X=@ leading space" ] => /bad argument for X/,
+        [ "X=@trailing " ] => /bad argument for X/, [ "X=@a|b" ] => /bad argument for X/,
+        [ "X=@No such entry" ] => /X: resource not found exactly once/ }.each do |args, message|
+        stdout, stderr, status = Open3.capture3(env, HELPER, *args)
+        assert_equal [ "", false ], [ stdout, status.success? ], args.inspect
+        assert_match message, stderr
+      end
+    end
+  end
+
+  test "--value prints one raw value, and nothing on any failure" do
+    named = ROWS + [ { id: "44444444-4444-4444-4444-444444444444", name: "Example issuer client",
+      username: "client-id", password: %q(se cr"et'=x), description: "" },
+      { id: "66666666-6666-6666-6666-666666666666", name: "Example json client", username: "",
+        password: JSON.generate("CLIENT_ID" => "json-id", "CLIENT_SECRET" => "json-se cr", "N" => 1), description: "" } ]
+    with_fake_passbolt(named) do |dir, env|
+      secrets = parse(dir, env, <<~SECRETS)
+        ID=$(#{HELPER} --value "@Example issuer client:username")
+        SECRET=$(#{HELPER} --value "@Example issuer client:password")
+        ENC=$(#{HELPER} --value #{B}:description:ENCRYPTION_KEY)
+        JID=$(#{HELPER} --value "@Example json client:password:CLIENT_ID")
+      SECRETS
+      assert_equal [ "client-id", %q(se cr"et'=x), "enc=key==", "json-id" ], secrets.values_at("ID", "SECRET", "ENC", "JID")
+      calls = File.readlines(File.join(dir, "calls"))
+      assert_equal 4, calls.size
+      calls.each { |call| refute_match(/client-id|se cr|enc=key/, call) }
+
+      {
+        [ "--value" ] => /exactly one reference/, [ "--value", "@Example issuer client", "@Example issuer client" ] => /exactly one reference/,
+        [ "--value", "N=@Example issuer client" ] => /bad argument/, [ "--value", "@No such entry" ] => /not found exactly once/,
+        [ "--value", "#{C}:username" ] => /empty/,
+        [ "--value", "@Example issuer client:password:CLIENT_ID" ] => /password is not a JSON object/,
+        [ "--value", "@Example json client:password:MISSING" ] => /MISSING is not in the password object/,
+        [ "--value", "@Example json client:password:N" ] => /N is not a string/,
+        [ "--value", "@Example json client:password:bad-key" ] => /bad argument/
+      }.each do |args, message|
+        stdout, stderr, status = Open3.capture3(env, HELPER, *args)
+        assert_equal [ "", false ], [ stdout, status.success? ], args.inspect
+        assert_match message, stderr
+        assert_no_match(/client-id|se cr|json-/, stderr)
+      end
+    end
+  end
+
   test "a failure prints nothing and names the secret, never a value" do
     with_fake_passbolt do |_, env|
       {
@@ -52,7 +114,7 @@ class PassboltFetchTest < ActiveSupport::TestCase
         [ "N=#{A}:secret" ] => /bad argument for N/,
         [ "lower=#{A}" ] => /bad argument/,
         [ "N=not-a-uuid" ] => /bad argument/,
-        [ "N=#{A}:password:K" ] => /bad argument/,
+        [ "N=#{A}:username:K" ] => /bad argument/,
         [ "N=#{B}:description:K:EXTRA" ] => /bad argument/,
         [] => /nothing to fetch/
       }.each do |args, message|

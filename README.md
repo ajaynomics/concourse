@@ -29,9 +29,8 @@ and mailbox, written in Rails. It runs no model.
 
 [Run it locally](#run-it-locally) · [How it works](docs/how-concourse-works.md) · [Developer quick start](docs/developer-quickstart.md) · [Contributing](CONTRIBUTING.md)
 
-**Status:** pre-1.0. Concourse tracks Rails main (8.2.0.alpha), so expect
-changes. Examples below use `https://concourse.example.com`; put your own
-deployment's origin there.
+**Status:** v1.0.0. Concourse tracks Rails main (8.2.0.alpha). Examples below
+use `https://concourse.example.com`; put your own deployment's origin there.
 
 ## What it does
 
@@ -178,7 +177,7 @@ The server is Rails with SQLite, Falcon and Hotwire; the Pi connector is TypeScr
 
 ## Run it locally
 
-Requirements: Ruby 4.0.6 (see `.ruby-version`), SQLite 3, and Chrome for the
+Requirements: Ruby 4.0.10 (see `.ruby-version`), SQLite 3, and Chrome for the
 system tests. The A2A conformance kit in `bin/ci` also needs
 [uv](https://docs.astral.sh/uv/).
 

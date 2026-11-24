@@ -6,24 +6,32 @@ class MarketingTest < ActionDispatch::IntegrationTest
       get sign_in_path
       assert_response :success
       assert_select "body.concourse-marketing"
-      assert_select "h1", count: 1, text: /Stop being.*the\s*messenger/m
-      assert_select "a[href=?]", join_path, text: /Connect with Pi/
-      assert_select "form[action=?][method=post]", ajent_auth_path, count: 2
-      assert_select "title", text: "Concourse · Stop being the messenger"
+      assert_select "h1", count: 1, text: /Your agents,.*whoever\s*made them/m
+      assert_select "#connection-title", text: /Stop being.*the messenger/m
+      assert_select "a[href=?]", join_path, text: /Connect your agent/
+      assert_select "form[action=?][method=post]", ajent_auth_path, count: 3
+      assert_select "form[action=?] button", ajent_auth_path, text: /Sign up/, count: 2
+      assert_select "a[href=?]", "https://github.com/ajaynomics/concourse", minimum: 3
+      assert_select "title", text: "Concourse · One network for agents from any vendor"
       assert_select "#networks", text: /no cross-network forwarding/i
       assert_select ".m-connector", text: /Pi.*Available/m
-      assert_select ".m-connector-future", text: /More agents & frameworks.*Coming soon/m
+      assert_select ".m-connector", text: /Muse.*Available/m
+      assert_select ".m-connector", text: /MCP apps.*Available/m
+      assert_select ".m-connector-future", count: 0
       assert_select ".m-connect-note", text: /Approve sign-in.*Choose your network/m
       assert_select "#related-projects a", count: 4
       assert_select "#related-projects a[href=?]", "https://a2a-protocol.org/latest/specification/", text: /A2A/
       assert_select "#related-projects", text: /not bundled integrations or endorsements/
-      assert_select ".m-disclosure", text: /typed input may be recorded/
+      assert_select ".m-disclosure", text: /We measure visits; we do not record sessions or typed input\./
       assert_select "video[poster][muted][playsinline][loop][preload=none]", count: 1
       assert_select "video[autoplay], video source[src]", count: 0
       assert_select "video source[data-src]", count: 2
       assert_select "#connection-caption", text: /Before:.*After:.*An illustration, not a live recording/m
       assert_select ".m-wont", text: /will not do:.*run a model/m
-      assert_select ".m-commands", text: /script\/concourse-v3 install.*signup.*start/m
+      assert_select ".m-wont", text: /information, not authority/
+      assert_select ".m-eyebrow", text: /Built on A2A 1\.0/
+      assert_select ".m-commands", text: /concourse\.example\.com\/mcp.*A2A 1\.0.*github\.com\/ajaynomics\/concourse-clients/m
+      assert_select ".m-commands", text: /gitea/, count: 0
       assert_select "button[data-hero-film-target=toggle][hidden]"
       assert_select "footer#site_footer", count: 1
     end
@@ -76,7 +84,16 @@ class MarketingTest < ActionDispatch::IntegrationTest
         assert_select "footer#site_footer.m-footer", count: 1 do
           assert_select ".m-origin .sr-only", text: "Made in Canada. Friends with the USA."
           assert_select ".m-origin [aria-hidden=true] svg", count: 2
-          assert_select "a[href='https://krishnan.ca/'][rel=noopener][aria-label='Ajay Krishnan'] svg path[fill=currentColor]"
+          assert_select ".m-footer-credit p", text: "Built by Ajay Krishnan. Also: Ajent, https://ajent.krishnan.ca/", count: 1 do
+            assert_select "a[href=?]", "https://krishnan.ca/", text: "Ajay Krishnan"
+            assert_select "a[href=?]", "https://ajent.krishnan.ca/", text: "https://ajent.krishnan.ca/"
+          end
+          assert_select 'nav[aria-label="More from Ajay"]', count: 1 do
+            assert_select "a", count: 3
+            assert_select "a[href=?]", "https://slate.krishnan.ca/", text: "Slate"
+            assert_select "a[href=?]", "https://ajent.krishnan.ca/", text: "Ajent"
+            assert_select "a[href=?]", "https://lintel.legal", text: "Lintel"
+          end
           assert_select "a[href=?]", terms_path, text: "Terms"
           assert_select "a[href=?]", privacy_path, text: "Privacy"
           assert_select "a[href=?]", "mailto:concourse@krishnan.ca", text: "Contact"

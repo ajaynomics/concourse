@@ -13,17 +13,19 @@ module A2a
     # Fixed SQLite expressions: BLOB length measures UTF-8 bytes, not characters.
     # Only aggregate sizes/counts leave these Task-scoped child queries. Counting
     # all persisted ID alternatives conservatively covers wire ID precedence.
-    INBOX_MESSAGE_BYTES_SQL = <<~SQL.squish.freeze
-      COALESCE(SUM(
-        COALESCE(LENGTH(CAST(messages.parts AS BLOB)), 0) +
-        COALESCE(LENGTH(CAST(messages.metadata AS BLOB)), 0) +
-        COALESCE(LENGTH(CAST(messages.extensions AS BLOB)), 0) +
-        COALESCE(LENGTH(CAST(messages.reference_task_ids AS BLOB)), 0) +
-        COALESCE(LENGTH(CAST(messages.message_id AS BLOB)), 0) +
-        COALESCE(LENGTH(CAST(messages.client_message_id AS BLOB)), 0) +
-        COALESCE(LENGTH(CAST(messages.native_message_id AS BLOB)), 0)
-      ), 0) + COUNT(*) * 128
+    INBOX_MESSAGE_ROW_BYTES_SQL = <<~SQL.squish.freeze
+      COALESCE(LENGTH(CAST(messages.parts AS BLOB)), 0) +
+      COALESCE(LENGTH(CAST(messages.metadata AS BLOB)), 0) +
+      COALESCE(LENGTH(CAST(messages.extensions AS BLOB)), 0) +
+      COALESCE(LENGTH(CAST(messages.reference_task_ids AS BLOB)), 0) +
+      COALESCE(LENGTH(CAST(messages.message_id AS BLOB)), 0) +
+      COALESCE(LENGTH(CAST(messages.client_message_id AS BLOB)), 0) +
+      COALESCE(LENGTH(CAST(messages.native_message_id AS BLOB)), 0)
     SQL
+    INBOX_MESSAGE_BYTES_SQL = "COALESCE(SUM(#{INBOX_MESSAGE_ROW_BYTES_SQL}), 0) + COUNT(*) * 128".freeze
+    # Room kept for the Task envelope, status, metadata and the repeated context ids
+    # when choosing how much history fits.
+    INBOX_TAIL_HEADROOM_BYTES = 16 * 1024
     INBOX_ARTIFACT_BYTES_SQL = <<~SQL.squish.freeze
       COALESCE(SUM(
         COALESCE(LENGTH(CAST(artifacts.parts AS BLOB)), 0) +
@@ -60,6 +62,9 @@ module A2a
         # repeated history content, neither of which a storage estimate can prove.
         bytes = payload && ActiveSupport::JSON.encode(payload).bytesize
         if !bytes || bytes > MAX_INBOX_TASK_BYTES
+          payload, bytes = newest_history(record, message_count.to_i)
+        end
+        if !bytes
           blocked_tasks << { "taskId" => record.id, "code" => "INBOX_TASK_TOO_LARGE" }
         elsif page_bytes + bytes + 1 > MAX_INBOX_PAGE_BYTES
           next_page_token = yield last_processed
@@ -73,6 +78,41 @@ module A2a
 
       { "tasks" => tasks, "blockedTasks" => blocked_tasks,
         "nextPageToken" => next_page_token, "pageSize" => page_size }
+    end
+
+    # A Task too large for one snapshot still delivers its newest messages: A2A
+    # historyLength (§3.2.4) is the most recent N, so a tail is a valid Task. It says
+    # so in metadata, so a reader knows earlier history was left out, not lost.
+    # Artifacts are never cut; a Task whose artifacts or newest message alone do not
+    # fit stays blocked. Returns [payload, bytes] or nil.
+    def newest_history(record, total)
+      return if record.relay_task || total < 2
+
+      artifact_bytes = record.artifacts.pick(Arel.sql(INBOX_ARTIFACT_BYTES_SQL)).to_i
+      budget = MAX_INBOX_TASK_BYTES - INBOX_TAIL_HEADROOM_BYTES - artifact_bytes
+      return if budget <= 0
+
+      order = { created_at: :desc, message_id: :desc }
+      sizes = record.messages.order(order).pluck(Arel.sql("(#{INBOX_MESSAGE_ROW_BYTES_SQL}) + 128"))
+      # The newest message counts twice: status.message repeats it.
+      used = record.context_id.bytesize + sizes.first.to_i
+      keep = 0
+      sizes.each do |size|
+        break if used + size + record.context_id.bytesize > budget
+
+        used += size + record.context_id.bytesize
+        keep += 1
+      end
+      keep = [ keep, total - 1 ].min
+      while keep >= 1
+        payload = task(record, history_length: keep, artifacts: :include, caller: true)
+        payload["metadata"] = (payload["metadata"] || {}).merge("concourse.history" => { "truncated" => true, "returned" => keep, "total" => total })
+        bytes = ActiveSupport::JSON.encode(payload).bytesize
+        return [ payload, bytes ] if bytes <= MAX_INBOX_TASK_BYTES
+
+        keep /= 2
+      end
+      nil
     end
 
     def task(record, history_length: nil, artifacts: :if_present, caller: false, recipient: false)

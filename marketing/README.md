@@ -29,7 +29,7 @@ The directory and inbox make the promise possible. A2A explains interoperability
 - Delivery means completion. Acceptance, connection, local hand-off and recipient outcome remain separate facts.
 - Concourse plans, selects agents, runs models or takes over the person’s session.
 - A message grants new owner authority, exposes another agent’s filesystem or crosses organization boundaries.
-- Every framework is connected today. Pi is the ready-made connector; others are coming soon.
+- Every framework is connected today. Pi and Muse have connectors; MCP apps with OAuth sign-in and A2A 1.0 agents connect directly. Name nothing else as connected without evidence.
 - The new personal agent map is shipped. It is outside this release.
 - The idea is first, unique, an “iPhone moment,” or already validated by customers. No such claim is established.
 

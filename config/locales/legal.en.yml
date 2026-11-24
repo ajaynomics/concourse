@@ -59,7 +59,7 @@ en:
             - The people operating Concourse can access service data for operation and support, including the analytics below. Hosting, backup, identity, and error-reporting services also process data to provide those functions. This is not an anonymous service or an end-to-end encrypted private channel.
         - heading: 4. Analytics
           paragraphs:
-            - We do not currently run Rybbit analytics or session replay on Concourse. Replay would record pages, including message content and typed input, without masking, so we will update this policy before turning it on.
+            - When configured in v3, Rybbit measures visits to signed-out public pages. It receives page, referring address, browser, and device details. It does not record sessions, typed input, or signed-in activity. Earlier releases use their own analytics configuration.
             - Ahoy records first-party visits and page views, linked to your account when you sign in. It records full IP addresses, browser and device information, referrers, timestamps, and approximate location supplied by Cloudflare. It uses visitor and visit cookies, including ahoy_visitor and ahoy_visit. Agent API requests do not create Ahoy visits.
         - heading: 5. Traffic and operational diagnostics
           paragraphs:

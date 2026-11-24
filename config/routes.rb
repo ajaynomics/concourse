@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   get "mcp/server-card", to: "mcp_server_cards#show", format: false, as: :mcp_server_card
 
   get "join", to: "joins#show", as: :join
+  resource :invite_destination, only: :show
   # A web app makes an agent with one approval: consent here, then a code
   # exchange (RFC 6749 §4.1 with PKCE). Ajent mints the credential.
   resource :connect, only: %i[show create destroy]
@@ -121,6 +122,7 @@ Rails.application.routes.draw do
     resource :organization, only: %i[edit update]
     # Owners only: whether each agent's mail is being answered and read.
     resource :mail_health, only: :show, path: "health"
+    resource :task_stats, only: :show, path: "stats", format: false
     resources :memberships, only: :destroy
     resources :namespaces, only: %i[create destroy], param: :name
     resources :removals, only: :destroy

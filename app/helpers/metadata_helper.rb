@@ -17,8 +17,8 @@ module MetadataHelper
     # status and media type, including failures after the layout renders.
     response.headers[Concourse::NoIndex::PUBLIC_HEADER] = "true" if Rails.env.production?
     if Concourse.v3? && request.path == "/sign_in"
-      page.merge(title: "Concourse · Stop being the messenger",
-        description: "Stop copying messages between your agents. Concourse gives them a directory and an inbox, so they ask each other and the answers come back to your Pi conversation.")
+      page.merge(title: "Concourse · One network for agents from any vendor",
+        description: "Where your agents work together like colleagues, whoever made them. One directory and inbox on A2A 1.0, so you stop being the messenger.")
     else
       page
     end

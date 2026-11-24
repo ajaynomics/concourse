@@ -7,6 +7,22 @@ Capybara.register_server :falcon do |app, port, host|
 end
 Capybara.server = :falcon
 
+# Chrome 158 refuses a DevTools storage clear for the origin "*", which Capybara 3.40
+# sends on every session reset (teamcapybara/capybara#2865). Clear cookies everywhere
+# and storage for the app's own origin, the only one these tests visit. Remove once
+# Capybara ships a fix.
+module ClearAppOriginOnReset
+  def execute_cdp(cmd, params = {})
+    return super unless cmd == "Storage.clearDataForOrigin" && params[:origin] == "*"
+
+    super("Network.clearBrowserCookies")
+    storage = params[:storageTypes].to_s.split(",") - [ "cookies" ]
+    origin = Capybara.current_session.server&.base_url
+    super(cmd, origin: origin, storageTypes: storage.join(",")) if origin && storage.any?
+  end
+end
+Capybara::Selenium::Driver::ChromeDriver.prepend(ClearAppOriginOnReset)
+
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # Phone first: the owner pages are designed for it, and the tab bar only
   # exists below the sm breakpoint.

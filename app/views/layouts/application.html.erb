@@ -33,14 +33,13 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 
-    <%# Rybbit, on every page, when a site id is configured. Blank renders
-        nothing, which keeps development and test quiet.
-
-        Replay records everything on these pages, unmasked: message and
-        artifact content, names, and what is typed into inputs. Rybbit masks
-        every input, passwords, and emails by default; the two attributes
-        turn that off. %>
-    <% if analytics_site_id.present? %>
+    <% public_analytics = Concourse.v3? && analytics_site_id.present? && !content_for?(:without_analytics) && public_analytics_page? %>
+    <% if public_analytics %>
+      <%# Require a fresh document when moving between pages with and without the script. %>
+      <script src="<%= Concourse.config(:analytics, :host) %>/api/script.js" defer
+              data-site-id="<%= analytics_site_id %>" data-replay-sample-rate="0" data-turbo-track="reload"></script>
+    <% elsif !Concourse.v3? && !content_for?(:without_analytics) && analytics_site_id.present? %>
+      <%# Preserve the older installation's replay settings. %>
       <script src="<%= Concourse.config(:analytics, :host) %>/api/script.js" defer
               data-site-id="<%= analytics_site_id %>"
               data-replay-mask-all-inputs="false"
@@ -49,12 +48,19 @@
   </head>
 
   <body class="min-h-dvh <%= content_for(:body_class) %>"
-        data-controller="analytics ahoy"
-        data-analytics-user-id-value="<%= analytics_user_id %>"
-        data-analytics-traits-value="<%= analytics_traits.to_json %>">
+        <% if public_analytics %>data-turbo="false"<% end %>
+        <% unless content_for?(:without_analytics) %>
+          <% if Concourse.v3? %>
+            data-controller="ahoy"
+          <% else %>
+            data-controller="analytics ahoy"
+            data-analytics-user-id-value="<%= analytics_user_id %>"
+            data-analytics-traits-value="<%= analytics_traits.to_json %>"
+          <% end %>
+        <% end %>>
     <a data-turbo="false" href="#main" class="skip-link"><%= t(".skip_to_content") %></a>
 
-    <% if signed_in? %>
+    <% if signed_in? && !content_for?(:without_organization_navigation) %>
       <%= turbo_stream_from Current.organization, "tasks", channel: OrganizationTasksChannel if Current.organization && live_updates? %>
 
       <header id="site_header" class="sticky top-0 z-40 border-b border-edge/[0.08] bg-ink-900 pt-[env(safe-area-inset-top)]">
@@ -160,7 +166,7 @@
 
     <%= render "layouts/footer" %>
 
-    <% if signed_in? %>
+    <% if signed_in? && !content_for?(:without_organization_navigation) %>
       <% if Current.organization %>
         <nav id="tab_bar" aria-label="Primary" class="fixed inset-x-0 bottom-0 z-40 border-t border-edge/[0.08] bg-ink-900 pb-[env(safe-area-inset-bottom)] md:hidden">
           <div class="mx-auto flex max-w-md">

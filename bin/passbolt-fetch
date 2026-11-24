@@ -10,42 +10,71 @@
 #   DATABASE_URL=postgres://app:$DB_PASSWORD@db:5432/app     # composing still works
 #
 # Fields: password (default), username, description (whole), description:KEY
-# (the value of the one line `KEY=value` in the description).
+# (the value of the one line `KEY=value` in the description), password:KEY (the
+# string at KEY when the password is a JSON object, e.g. {"ID": "..", "SECRET": ".."}).
+#
+# A resource is named by its id, or by its exact name after `@` when only the
+# name is shared (letters, digits, space, . / _ -; no colon or quotes):
+#   CLIENT_ID="@Example issuer client:username"   (quote it: the name has spaces)
+# Either way it must match exactly one resource the signed-in user can see.
 # Prints shell-quoted JSON {NAME: value}, the shape `kamal secrets extract` reads.
+#
+#   CLIENT_SECRET=$(bin/passbolt-fetch --value "@Example issuer client:password")
+#
+# --value takes one reference and prints only its raw value, so the value goes
+# straight from stdout into the secrets file: no extract step, so it never
+# becomes another command's argument. One sign-in per --value line.
 # Values travel only through pipes: never argv, never disk. On any failure it
-# prints nothing to stdout, names (never values) go to stderr, and exits 1, so
-# extract fails and Kamal stops instead of deploying a blank.
+# prints nothing to stdout, names (never values) go to stderr, and exits 1.
 set -euo pipefail
 uuid='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-specs=() ids=()
+named='^@[A-Za-z0-9]([A-Za-z0-9 ./_-]*[A-Za-z0-9])?$'
+specs=() refs=() mode=map
+if [[ ${1:-} == --value ]]; then
+  [[ $# -eq 2 ]] || { echo "passbolt-fetch: --value takes exactly one reference" >&2; exit 1; }
+  mode=value; set -- "VALUE=$2"
+fi
 for arg in "$@"; do
   name=${arg%%=*} ref=${arg#*=}
   IFS=: read -r id field key extra <<<"$ref"
   field=${field:-password} key=${key:-}
   ok=1
-  [[ $arg == *=* && $name =~ ^[A-Z][A-Z0-9_]*$ && $id =~ $uuid && -z ${extra:-} ]] || ok=
+  [[ $arg == *=* && $name =~ ^[A-Z][A-Z0-9_]*$ && -z ${extra:-} ]] || ok=
+  if [[ $id =~ $uuid ]]; then by=ID
+  elif [[ $id =~ $named ]]; then by=Name id=${id#@}
+  else ok=
+  fi
   case $field in
-    password|username) [[ -z $key ]] || ok= ;;
-    description) [[ -z $key || $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || ok= ;;
+    username) [[ -z $key ]] || ok= ;;
+    password|description) [[ -z $key || $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || ok= ;;
     *) ok= ;;
   esac
   [[ $ok ]] || { echo "passbolt-fetch: bad argument for ${name:-?}" >&2; exit 1; }
-  specs+=("$name"$'\t'"$id"$'\t'"$field"$'\t'"$key") ids+=("$id")
+  specs+=("$name"$'\t'"$by"$'\t'"$id"$'\t'"$field"$'\t'"$key") refs+=("$by == \"$id\"")
 done
 ((${#specs[@]})) || { echo "passbolt-fetch: nothing to fetch" >&2; exit 1; }
 
-filter=$(printf '%s\n' "${ids[@]}" | sort -u | sed 's/.*/ID == "&"/' | paste -sd'|' | sed 's/|/ || /g')
+filter=$(printf '%s\n' "${refs[@]}" | sort -u | paste -sd'|' | sed 's/|/ || /g')
 passbolt list resource --filter "$filter" \
-    --column id --column username --column password --column description -j |
-  jq -r --args '
+    --column id --column name --column username --column password --column description -j |
+  jq -r --arg mode "$mode" --args '
     . as $rows
-    | reduce ($ARGS.positional[] | split("\t")) as [$name, $id, $field, $key] ({};
-        [$rows[] | select(.id == $id)] as $match
+    | reduce ($ARGS.positional[] | split("\t")) as [$name, $by, $id, $field, $key] ({};
+        [$rows[] | select(if $by == "ID" then .id == $id else .name == $id end)] as $match
         | if ($match | length) != 1 then error("\($name): resource not found exactly once") else . end
         | ($match[0][$field] // "") as $text
         | (if $key == "" then $text
+           elif $field == "password" then
+             # Parse inside [...] so the parse finishes before any error below;
+             # older jq (1.6) lets a later error re-enter a bare `try` and be
+             # swallowed. Check the type before indexing; errors name, never echo.
+             [$text | fromjson?] as $parsed
+             | if ($parsed | length) != 1 or ($parsed[0] | type) != "object" then error("\($name): password is not a JSON object")
+               elif ($parsed[0] | has($key)) | not then error("\($name): \($key) is not in the password object")
+               elif ($parsed[0][$key] | type) != "string" then error("\($name): \($key) is not a string")
+               else $parsed[0][$key] end
            else [$text | gsub("\r"; "") | split("\n")[] | select(startswith($key + "=")) | ltrimstr($key + "=")] as $lines
              | if ($lines | length) != 1 then error("\($name): \($key)= is not on exactly one description line") else $lines[0] end
            end) as $value
         | if ($value | type) != "string" or ($value | length) == 0 then error("\($name): empty") else . + {($name): $value} end)
-    | tojson | @sh' "${specs[@]}"
+    | if $mode == "value" then .VALUE else (tojson | @sh) end' "${specs[@]}"

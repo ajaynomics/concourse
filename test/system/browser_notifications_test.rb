@@ -177,7 +177,17 @@ class BrowserNotificationsSystemTest < ApplicationSystemTestCase
   def stub_push(permission: "granted", unsupported: false, fail_save: false, unready: false)
     result = evaluate_async_script <<~JS, permission, unsupported, fail_save, unready
       const [permission, unsupported, failSave, unready, done] = arguments
-      Promise.all([import("controllers/application"), navigator.serviceWorker.ready]).then(async ([{ application }]) => {
+      // Wait for the page's own first connect to settle (its worker wait is capped at
+      // two seconds), not for the real service worker. Waiting on the real worker could
+      // outlast the script timeout on a busy runner, and an unsettled first connect could
+      // render after this stub and overwrite the status under test.
+      import("controllers/application").then(async ({ application }) => {
+        const element = document.querySelector("[data-controller=push]")
+        for (;;) {
+          const page = application.getControllerForElementAndIdentifier(element, "push")
+          if (page && page.busy === false) break
+          await new Promise(resolve => setTimeout(resolve, 25))
+        }
         window.permissionRequests = window.subscribeCalls = window.unsubscribeCalls = 0
         window.failPushSave = failSave
         window.failPushDelete = false

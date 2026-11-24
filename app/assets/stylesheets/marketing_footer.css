@@ -13,9 +13,11 @@
 .m-footer-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 20px 36px; border-top: 1px solid #ffffff25; padding-top: 20px; }
 .m-origin { font-size: 12px; line-height: 2; margin: 0; }
 .m-flag { display: inline-block; width: 25px; height: 13px; vertical-align: -2px; margin-inline: 3px; outline: 1px solid #ffffff40; border-radius: 1px; }
-.m-ajent { min-height: 44px; display: inline-flex; align-items: center; gap: 10px; color: #f2f0e7; font-size: 12px; }
-.m-ajent a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: inherit; }
-.m-ajent svg { width: auto; height: 1rem; }
+.m-footer-credit { flex-basis: 100%; min-width: 0; font-size: 13px; }
+.m-footer-credit p { margin: 0; line-height: 1.7; overflow-wrap: anywhere; }
+.m-footer-credit a { color: #f2f0e7; text-decoration: underline; text-underline-offset: .2em; }
+.m-footer-projects { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; }
+.m-footer-projects a { display: inline-flex; align-items: center; min-height: 44px; }
 .m-footer-protocol { font-family: var(--font-mono), monospace; font-size: 10px; margin-left: auto; }
 @media (max-width: 800px) {
   .m-footer-top { gap: 36px; }

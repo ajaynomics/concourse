@@ -14,8 +14,9 @@ class InvitationsController < ApplicationController
   end
 
   def destroy
-    invitation = Current.organization.invitations.find(params[:id])
-    invitation.destroy!
+    invitation = Invitation.transaction do
+      Current.organization.invitations.lock.find(params[:id]).destroy!
+    end
     redirect_to edit_organization_path(Current.organization), notice: t(".withdrawn", email: invitation.email), status: :see_other
   end
 end

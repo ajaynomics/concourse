@@ -35,7 +35,8 @@ class User < ApplicationRecord
     raise UnauthorizedIdentity, "missing subject" if subject.blank?
 
     user = find_or_initialize_by(ajent_sub: subject.to_s)
-    user.email = string_from(user_info, "email") || user.email
+    claimed_email = string_from(user_info, "email")
+    user.email = claimed_email || user.email
     user.name = string_from(user_info, "name").presence || user.name || user.email
     user.email_verified = verified_email?(user_info)
     # A shared card is the handle. A user who already has an agent keeps
@@ -44,7 +45,7 @@ class User < ApplicationRecord
       user.handle = available_handle(preferred_handle(email: user.email, sub: subject), except: user)
     end
     user.save!
-    user.join_organizations if verified_email?(user_info)
+    user.join_organizations(verified_email: claimed_email) if user.email_verified?
     user
   end
 
@@ -79,8 +80,13 @@ class User < ApplicationRecord
 
   # An invitation is an owner's approval. A claimed domain is not: an
   # organization that approves members gets a request instead of a member.
-  def join_organizations
-    Invitation.where(email: email.to_s.strip.downcase).includes(:organization).each { |invitation| invitation.accept(self) } # tenancy-ok: invitations addressed to this verified email
+  def join_organizations(verified_email:)
+    if verified_email.present?
+      Invitation.where(email: verified_email).includes(:organization).each do |invitation| # tenancy-ok: invitations addressed to this verified email
+        invitation.accept(self, verified_email: verified_email)
+      end
+    end
+
     Organization.claiming_email_domain(email_domain).each do |organization|
       next if organizations.include?(organization) || organization.removals.exists?(user: self)
 

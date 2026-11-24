@@ -24,7 +24,12 @@ class JoinGuideTest < ActionDispatch::IntegrationTest
         body = body.gsub("Ajay Krishnan Professional Corporation", "")
           .gsub("concourse@krishnan.ca", "").gsub("https://www.krishnan.ca", "")
           .gsub(%(href="https://krishnan.ca/"), "").gsub(%(aria-label="Ajay Krishnan"), "") # the operator's maker's mark
-          .gsub("https://concourse.krishnan.ca", "")
+        if release == 3 && %w[/join /sign_in /terms /privacy].include?(name)
+          # The approved public footer credits the operator and their products.
+          body = body.gsub(">Ajay Krishnan</a>. Also: Ajent,", "></a>. Also: Ajent,")
+            .gsub(%(href="https://ajent.krishnan.ca/"), "").gsub(">https://ajent.krishnan.ca/</a>", "></a>")
+            .gsub(%(href="https://slate.krishnan.ca/"), "")
+        end
         TENANT_WORDS.each { |word| assert_no_match(/#{word}/i, body, "V#{release} #{name} names #{word}") }
       end
     end

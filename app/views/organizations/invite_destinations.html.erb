@@ -1,0 +1,21 @@
+<% content_for :title, t(".title") %>
+<% content_for :without_organization_navigation, "true" %>
+<% content_for :without_analytics, "true" %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
+<section class="max-w-2xl">
+  <h1 class="page-title"><%= t(".title") %></h1>
+  <p class="page-lead"><%= t(".lead") %></p>
+  <% if @destinations.any? %>
+    <ul id="invite_destinations" class="rows mt-6">
+      <% @destinations.each do |organization| %>
+        <li><%= link_to organization.name, edit_organization_path(organization), class: "btn-quiet", data: { turbo: false } %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p id="no_invite_destinations" class="mt-6"><%= t(".empty") %></p>
+  <% end %>
+  <%= link_to t(".back"), root_path, class: "btn-quiet mt-6" %>
+</section>

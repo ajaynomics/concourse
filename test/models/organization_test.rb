@@ -20,37 +20,37 @@ class OrganizationTest < ActiveSupport::TestCase
   end
 
   test "email domains are stored one per line, lowercase, without an @" do
-    organization = Organization.create!(name: "Acme", email_domains: "@Acme.com, acme.org\n\nacme.com")
+    organization = Organization.create!(name: "Acme", email_domains: "@Example.com, example.org\n\nexample.com")
 
-    assert_equal "acme.com\nacme.org", organization.email_domains
-    assert_equal %w[acme.com acme.org], organization.email_domain_list
+    assert_equal "example.com\nexample.org", organization.email_domains
+    assert_equal %w[example.com example.org], organization.email_domain_list
   end
 
   test "something that is not a domain is refused" do
-    organization = Organization.new(name: "Acme", email_domains: "acme.com localhost not_a.domain")
+    organization = Organization.new(name: "Acme", email_domains: "example.com localhost not_a.domain")
 
     assert_not organization.valid?
     assert_includes organization.errors[:email_domains].sole, "localhost and not_a.domain"
   end
 
   test "an organization claims a domain only by exact match" do
-    acme = Organization.create!(name: "Acme", email_domains: "acme.com")
+    acme = Organization.create!(name: "Acme", email_domains: "example.com")
 
-    assert_equal [ acme ], Organization.claiming_email_domain("ACME.com")
-    assert_empty Organization.claiming_email_domain("mail.acme.com")
+    assert_equal [ acme ], Organization.claiming_email_domain("EXAMPLE.com")
+    assert_empty Organization.claiming_email_domain("mail.example.com")
     assert_empty Organization.claiming_email_domain(nil)
   end
 
   test "a domain belongs to one organization" do
-    Organization.create!(name: "Acme", email_domains: "acme.com")
-    rival = Organization.new(name: "Rival", email_domains: "ACME.com")
+    Organization.create!(name: "Acme", email_domains: "example.com")
+    rival = Organization.new(name: "Rival", email_domains: "EXAMPLE.com")
 
     assert_not rival.valid?
-    assert_includes rival.errors[:email_domains].sole, "acme.com"
+    assert_includes rival.errors[:email_domains].sole, "example.com"
   end
 
   test "a public email provider is never an organization's domain" do
-    organization = Organization.new(name: "Acme", email_domains: "gmail.com acme.com")
+    organization = Organization.new(name: "Acme", email_domains: "gmail.com example.com")
 
     assert_not organization.valid?
     assert_includes organization.errors[:email_domains].sole, "gmail.com"
@@ -58,20 +58,20 @@ class OrganizationTest < ActiveSupport::TestCase
 
   test "on the web, an owner adds only the domain of their own verified email" do
     organization = Organization.create!(name: "Acme")
-    Current.user = User.create!(ajent_sub: "1", handle: "kim", email: "kim@acme.com", email_verified: true)
+    Current.user = User.create!(ajent_sub: "1", handle: "kim", email: "kim@example.com", email_verified: true)
 
-    assert_not organization.update(email_domains: "other.com")
-    assert organization.update(email_domains: "acme.com")
+    assert_not organization.update(email_domains: "example.net")
+    assert organization.update(email_domains: "example.com")
 
     Current.user.update!(email_verified: false)
-    assert_not organization.update(email_domains: "acme.com acme.org")
+    assert_not organization.update(email_domains: "example.com example.org")
     assert organization.reload.update(name: "Acme Labs"), "a domain already there needs no proof again"
   ensure
     Current.reset
   end
 
   test "the console adds any domain that is not taken or public" do
-    assert Organization.create(name: "Acme", email_domains: "acme.com").persisted?
+    assert Organization.create(name: "Acme", email_domains: "example.com").persisted?
   end
 
   test "no organization takes the platform's names, except the platform itself" do

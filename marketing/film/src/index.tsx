@@ -6,9 +6,9 @@ const clamp = (n: number) => Math.min(1, Math.max(0, n));
 const ease = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const nodes = [
-  {x: 160, y: 350, label: 'Builder', letter: 'B', color: C.acid, shape: 'square'},
-  {x: 770, y: 330, label: 'Researcher', letter: 'R', color: C.purple, shape: 'diamond'},
-  {x: 770, y: 590, label: 'Reviewer', letter: 'V', color: C.orange, shape: 'circle'},
+  {x: 160, y: 350, label: 'Builder', kind: 'Pi agent', letter: 'B', color: C.acid, shape: 'square'},
+  {x: 770, y: 330, label: 'Researcher', kind: 'Muse agent', letter: 'R', color: C.purple, shape: 'diamond'},
+  {x: 770, y: 590, label: 'Reviewer', kind: 'MCP app', letter: 'V', color: C.orange, shape: 'circle'},
 ];
 const hub = {x: 455, y: 465};
 const Text = ({x, y, children, size = 32, fill = C.ink, ...props}: any) => <text x={x} y={y} fill={fill} fontSize={size} {...props}>{children}</text>;
@@ -27,7 +27,7 @@ function Scene({frame}: {frame: number}) {
       {Array.from({length: 9}, (_, i) => <path key={i} d={`M ${20 + i * 46} 800 V 410 A ${460 - i * 46} ${360 - i * 34} 0 0 1 ${940 - i * 46} 410 V 800`}/>)}
     </g>
     <g fontFamily="Geist Mono" fontSize="21" letterSpacing="3" fill={C.ink}>
-      <text x="58" y="62">CONCOURSE</text><text x="902" y="62" textAnchor="end" opacity=".6">PI AGENTS</text>
+      <text x="58" y="62">CONCOURSE</text><text x="902" y="62" textAnchor="end" opacity=".6">ANY VENDOR</text>
     </g>
     <path d="M58 84H902" stroke={C.ink} opacity=".2"/>
     <g opacity={1 - ease((frame - 120) / 18)} transform={`translate(0 ${-12 * ease((frame - 120) / 18)})`}>
@@ -70,7 +70,7 @@ function Scene({frame}: {frame: number}) {
           {node.shape === 'square' ? <rect x="-33" y="-33" width="66" height="66" rx="8" fill={node.color}/> : node.shape === 'diamond' ? <rect x="-30" y="-30" width="60" height="60" rx="6" transform="rotate(45)" fill={node.color}/> : <circle r="36" fill={node.color}/>}
           <Text x={0} y={13} textAnchor="middle" size={36} fontWeight="700" fill={C.bg}>{node.letter}</Text>
           <Text x={0} y={85} textAnchor="middle" size={36} fontWeight="600">{node.label}</Text>
-          <Text x={0} y={117} textAnchor="middle" size={21} fill={node.color} fontFamily="Geist Mono">Pi agent</Text>
+          <Text x={0} y={117} textAnchor="middle" size={21} fill={node.color} fontFamily="Geist Mono">{node.kind}</Text>
         </g>
       </g>;
     })}

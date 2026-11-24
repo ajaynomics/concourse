@@ -58,6 +58,11 @@ class PushNotificationJobTest < ActiveJob::TestCase
     stub_request(:post, PushHosts::HOOK).to_return(status: 204)
     connections = []
     original_new = Net::HTTP.method(:new)
+    # Under WebMock, Net::HTTP is a subclass with no `new` of its own. Putting a copy of
+    # the parent's `new` back on it (the old ensure) left an override whose `super`
+    # dropped the proxy argument, so every later Net::HTTP subclass in this process read
+    # proxy settings from ENV. Remove the override instead of replacing it.
+    added = !Net::HTTP.singleton_class.method_defined?(:new, false)
     Net::HTTP.define_singleton_method(:new) { |*args| original_new.call(*args).tap { |http| connections << http } }
 
     assert config.deliver(event)
@@ -69,7 +74,9 @@ class PushNotificationJobTest < ActiveJob::TestCase
     assert_not http.proxy?
     assert_equal 0, http.max_retries
   ensure
-    Net::HTTP.define_singleton_method(:new, original_new) if original_new
+    if added then Net::HTTP.singleton_class.remove_method(:new)
+    elsif original_new then Net::HTTP.define_singleton_method(:new, original_new)
+    end
   end
 
   test "5xx, 429 and timeouts retry; 4xx and redirects are discarded" do
